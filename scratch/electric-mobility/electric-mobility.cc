@@ -64,6 +64,7 @@ static void
 CourseChange (std::ostream *os, std::string foo, Ptr<const MobilityModel> mobility)
 {
 
+  // Get the node Id from the context of callback
   uint32_t nodeId = GetNodeIdFromContext(foo);
 
   Vector pos = mobility->GetPosition (); // Get position
