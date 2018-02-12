@@ -55,8 +55,25 @@
 #include "ns3/mobility-module.h"
 #include "ns3/mobility-module.h"
 #include "ns3/ns2-mobility-helper.h"
+#include "electric-mobility-helper.h"
 
 using namespace ns3;
+
+// Prints actual position and velocity when a course change event occurs
+static void
+CourseChange (std::ostream *os, std::string foo, Ptr<const MobilityModel> mobility)
+{
+
+  uint32_t nodeId = GetNodeIdFromContext(foo);
+
+  Vector pos = mobility->GetPosition (); // Get position
+  Vector vel = mobility->GetVelocity (); // Get velocity
+
+  // Prints position and velocities
+  *os << Simulator::Now () << " Node=" << nodeId << " POS: x=" << pos.x << ", y=" << pos.y
+      << ", z=" << pos.z << "; VEL:" << vel.x << ", y=" << vel.y
+      << ", z=" << vel.z << std::endl;
+}
 
 // Example to use ns2 traces file and xml file to simulate consumption of electric vehicles
 int main (int argc, char *argv[])
@@ -78,12 +95,12 @@ int main (int argc, char *argv[])
   cmd.Parse (argc,argv);
 
   // Check command line arguments
-  if (traceFile.empty () || nodeNum <= 0 || duration <= 0 || logFile.empty ())
+  if (traceFile.empty () || vehicleAttributesFile.empty () || nodeNum <= 0 || duration <= 0 || logFile.empty ())
     {
       std::cout << "Usage of " << argv[0] << " :\n\n"
       "./waf --run \"electric-mobility"
       " --traceFile=src/mobility/examples/default.ns_movements"
-      "--vehicleAttributes=src/mobility/examples/vehicleAttributes.xml"
+      " --vehicleAttributes=src/mobility/examples/vehicleAttributes.xml"
       " --nodeNum=2 --duration=100.0 --logFile=electric-mobility.log\" \n\n"
       "NOTE: ns2-traces-file could be an absolute or relative path. You could use the file default.ns_movements\n"
       "      included in the same directory of this example file.\n\n"
@@ -94,4 +111,31 @@ int main (int argc, char *argv[])
       return 0;
     }
 
+  // open log file for output
+  std::ofstream os;
+  os.open (logFile.c_str ());
+
+  // Create Ns2MobilityHelper with the specified trace log file as parameter
+  Ns2MobilityHelper ns2 = Ns2MobilityHelper (traceFile);
+
+  // Create ElectricMobilityHelper with the xml of vehicle attributes
+  ElectricMobilityHelper electricMobility = ElectricMobilityHelper (vehicleAttributesFile, ns2, &os);
+
+  // Create all nodes.
+  NodeContainer stas;
+  stas.Create (nodeNum);
+
+  ns2.Install (); // configure movements for each node, while reading trace file
+  electricMobility.Install (); // configure the vehicle attributes for each node
+
+  // Configure callback for logging
+    Config::Connect ("/NodeList/*/$ns3::MobilityModel/CourseChange",
+                    MakeBoundCallback (&CourseChange, &os));
+
+  Simulator::Stop (Seconds (duration));
+  Simulator::Run ();
+  Simulator::Destroy ();
+
+  os.close (); // close log file
+  return 0;
 }
