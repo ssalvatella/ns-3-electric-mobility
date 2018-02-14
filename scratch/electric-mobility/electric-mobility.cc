@@ -59,23 +59,6 @@
 
 using namespace ns3;
 
-// Prints actual position and velocity when a course change event occurs
-static void
-CourseChange (std::ostream *os, std::string foo, Ptr<const MobilityModel> mobility)
-{
-
-  // Get the node Id from the context of callback
-  uint32_t nodeId = GetNodeIdFromContext(foo);
-
-  Vector pos = mobility->GetPosition (); // Get position
-  Vector vel = mobility->GetVelocity (); // Get velocity
-
-  // Prints position and velocities
-  *os << Simulator::Now () << " Node=" << nodeId << " POS: x=" << pos.x << ", y=" << pos.y
-      << ", z=" << pos.z << "; VEL:" << vel.x << ", y=" << vel.y
-      << ", z=" << vel.z << std::endl;
-}
-
 // Example to use ns2 traces file and xml file to simulate consumption of electric vehicles
 int main (int argc, char *argv[])
 {
@@ -112,15 +95,13 @@ int main (int argc, char *argv[])
       return 0;
     }
 
-  // open log file for output
-  std::ofstream os;
-  os.open (logFile.c_str ());
+
 
   // Create Ns2MobilityHelper with the specified trace log file as parameter
   Ns2MobilityHelper ns2 = Ns2MobilityHelper (traceFile);
 
   // Create ElectricMobilityHelper with the xml of vehicle attributes
-  ElectricMobilityHelper electricMobility = ElectricMobilityHelper (vehicleAttributesFile, ns2, &os);
+  ElectricMobilityHelper electricMobility = ElectricMobilityHelper (vehicleAttributesFile, ns2, logFile);
 
   // Create all nodes.
   NodeContainer stas;
@@ -129,14 +110,10 @@ int main (int argc, char *argv[])
   ns2.Install (); // configure movements for each node, while reading trace file
   electricMobility.Install (); // configure the vehicle attributes for each node
 
-  // Configure callback for logging
-    Config::Connect ("/NodeList/*/$ns3::MobilityModel/CourseChange",
-                    MakeBoundCallback (&CourseChange, &os));
-
   Simulator::Stop (Seconds (duration));
   Simulator::Run ();
   Simulator::Destroy ();
 
-  os.close (); // close log file
+  //os.close (); // close log file
   return 0;
 }

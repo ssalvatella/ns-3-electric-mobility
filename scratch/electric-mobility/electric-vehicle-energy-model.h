@@ -21,7 +21,10 @@
 #ifndef ELECTRIC_VEHICLE_ENERGY_MODEL_H
 #define ELECTRIC_VEHICLE_ENERGY_MODEL_H
 
+#include "ns3/traced-value.h"
 #include "ns3/energy-source.h"
+#include "ns3/nstime.h"
+#include "ns3/event-id.h"
 
 namespace ns3 {
 
@@ -33,11 +36,36 @@ namespace ns3 {
 
     ElectricVehicleEnergyModel ();
 
-    virtual ~ElectricVehicleEnergyModel (void);
+    ~ElectricVehicleEnergyModel (void);
 
-    virtual UpdateEnergyConsumption (void);
+    void UpdateEnergySource (void);
+
+
+    double GetInitialEnergy (void) const;
+
+    void SetInitialEnergy (double initialEnergyWh);
+
+    double GetSupplyVoltage (void) const;
+
+    double GetRemainingEnergy (void);
+
+    void SetRemainingEnergy (double remainingEnergy);
+
+    void DecreaseRemainingEnergy (double energyDecrease);
+
+    double GetEnergyFraction (void);
+
+    double GetMaximunBatteryCapacity (void);
+
+    void SetMaximunBatteryCapacity (double maximunBatteryCapacity);
     
-  }
+  private:
+    double m_initialEnergyWh;
+    double m_remainingEnergyWh;
+    double m_maximumBatteryCapacity;
+    Time m_lastUpdateTime;
+
+  };
 
 } // namespace ns3
 

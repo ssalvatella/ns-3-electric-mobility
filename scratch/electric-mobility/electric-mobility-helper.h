@@ -27,6 +27,7 @@
 #include <string>
 
 #include "ns3/ns2-mobility-helper.h"
+#include "electric-vehicle-energy-model.h"
 
 namespace ns3 {
 
@@ -37,7 +38,7 @@ public:
    * \param filename filename of file which contains the
    *        xml with vehicles attributes
    */
-  ElectricMobilityHelper (std::string filename, Ns2MobilityHelper ns2, std::ofstream *os);
+  ElectricMobilityHelper (std::string filename, Ns2MobilityHelper ns2, std::string log_file);
 
   /**
    * Read the xml file and configure the movement
@@ -45,11 +46,20 @@ public:
    * whose nodeId is matches the nodeId of the nodes in the trace
    * file.
    */
-  void Install (void) const;
+  void Install (void);
 
+  std::map<uint32_t, ElectricVehicleEnergyModel> GetElectricVehicleEnergyModels (void);
+
+
+private:
+  void CreateElectricVehicleEnergyModels (void);
+
+private:
   std::string m_filename; // filename of file containing the vehicle attributes
   Ns2MobilityHelper m_ns2; // ns2 mobility helper for access the mobility of nodes
-  std::ofstream m_os; // log file output
+  std::string m_logFile; // log file output
+
+  std::map<uint32_t, ElectricVehicleEnergyModel> m_electricVehicleEnergyModels;
 };
 
   uint32_t GetNodeIdFromContext(std::string context);
