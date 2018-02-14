@@ -362,3 +362,4 @@ ASALocalRun/
 # MSBuild Binary and Structured Log
 *.binlog
 .vscode/settings.json
+.vscode/launch.json
