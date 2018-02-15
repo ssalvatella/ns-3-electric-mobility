@@ -68,7 +68,30 @@ namespace ns3 {
 
       m_lastUpdateTime = Simulator::Now ();
 
-    }    
+    }
+
+    /*
+    * Getters and Setters
+    */
+
+    double 
+    ElectricVehicleEnergyModel::GetVelocity (void)
+    {
+      Vector vel = m_mobilityModel->GetVelocity ();
+      return std::sqrt (std::pow(vel.x, 2) + std::pow(vel.y, 2) + std::pow(vel.z, 2));
+    }
+
+    Ptr<const MobilityModel> 
+    ElectricVehicleEnergyModel::GetMobilityModel (void)
+    {
+      return m_mobilityModel;
+    }
+
+    void 
+    ElectricVehicleEnergyModel::SetMobilityModel (Ptr<const MobilityModel> mobilityModel)
+    {
+      m_mobilityModel = mobilityModel;
+    }
 
     double
     ElectricVehicleEnergyModel::GetInitialEnergy (void) const
@@ -121,7 +144,127 @@ namespace ns3 {
     ElectricVehicleEnergyModel::GetEnergyFraction (void)
     {
       NS_LOG_FUNCTION (this);
-      return 0;
+      return GetRemainingEnergy () / GetMaximunBatteryCapacity ();
+    }
+
+    double
+    ElectricVehicleEnergyModel::GetMaximunBatteryCapacity (void)
+    {
+      return m_maximumBatteryCapacity;
+    }
+
+    void 
+    ElectricVehicleEnergyModel::SetMaximunBatteryCapacity (double maximunBatteryCapacity)
+    {
+      m_maximumBatteryCapacity = maximunBatteryCapacity;
+    }
+
+    double
+    ElectricVehicleEnergyModel::GetMaximumPower (void)
+    {
+      return m_maximumPower;
+    }
+
+    void
+    ElectricVehicleEnergyModel::SetMaximumPower (double maximumPower)
+    {
+      m_maximumPower = maximumPower;
+    }
+
+    double
+    ElectricVehicleEnergyModel::GetVehicleMass (void)
+    {
+      return m_vehicleMass;
+    }
+
+    void
+    ElectricVehicleEnergyModel::SetVehicleMass (double vehicleMass)
+    {
+      m_vehicleMass = vehicleMass;
+    }
+
+    double
+    ElectricVehicleEnergyModel::GetFrontSurfaceArea (void)
+    {
+      return m_frontSurfaceArea;
+    }
+
+    void
+    ElectricVehicleEnergyModel::SetFrontSurfaceArea (double frontSurfaceArea)
+    {
+      m_frontSurfaceArea = frontSurfaceArea;
+    }
+
+    double
+    ElectricVehicleEnergyModel::GetAirDragCoefficient (void)
+    {
+      return m_airDragCoefficient;
+    }
+
+    void 
+    ElectricVehicleEnergyModel::SetAirDragCoefficient (double airDragCoefficient)
+    {
+      m_airDragCoefficient = airDragCoefficient;
+    }
+
+    double
+    ElectricVehicleEnergyModel::GetInternalMomentOfInertia (void)
+    {
+      return m_internalMomentOfInertia;
+    }
+
+    void
+    ElectricVehicleEnergyModel::SetInternalMomentOfInertia (double internalMomentOfInertia)
+    {
+      m_internalMomentOfInertia = internalMomentOfInertia;
+    }
+
+    double
+    ElectricVehicleEnergyModel::GetRadialDragCoefficient (void)
+    {
+      return m_radialDragCoefficient;
+    }
+
+    void
+    ElectricVehicleEnergyModel::SetRadialDragCoefficient (double radialDragCoefficient)
+    {
+      m_radialDragCoefficient = radialDragCoefficient;
+    }
+
+    double
+    ElectricVehicleEnergyModel::GetRollDragCoefficient (void)
+    {
+      return m_rollDragCoefficient;
+    }
+
+    void
+    ElectricVehicleEnergyModel::SetRollDragCoefficient (double rollDragCoefficient)
+    {
+      m_rollDragCoefficient = rollDragCoefficient;
+    }  
+
+    double
+    ElectricVehicleEnergyModel::GetPropulsionEfficiency (void)
+    {
+      return m_propulsionEfficiency;
+    }
+
+    void
+    ElectricVehicleEnergyModel::SetPropulsionEfficiency (double propulsionEfficiency)
+    {
+      m_propulsionEfficiency = propulsionEfficiency;
+    }
+
+    double
+    ElectricVehicleEnergyModel::GetRecuperationEfficiency (void)
+    {
+      return m_recuperationEfficiency;
+    }
+
+    void
+    ElectricVehicleEnergyModel::SetRecuperationEfficiency (double recuperationEfficiency)
+    {
+      m_recuperationEfficiency = recuperationEfficiency;
     }
 
 }

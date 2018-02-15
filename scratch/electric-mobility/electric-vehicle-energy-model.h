@@ -25,6 +25,7 @@
 #include "ns3/energy-source.h"
 #include "ns3/nstime.h"
 #include "ns3/event-id.h"
+#include "ns3/mobility-module.h"
 
 namespace ns3 {
 
@@ -40,6 +41,13 @@ namespace ns3 {
 
     void UpdateEnergySource (void);
 
+    /*
+    * Getters and Setters
+    */
+
+    void SetMobilityModel (Ptr<const MobilityModel> mobilityModel);
+
+    Ptr<const MobilityModel> GetMobilityModel (void);
 
     double GetInitialEnergy (void) const;
 
@@ -58,13 +66,65 @@ namespace ns3 {
     double GetMaximunBatteryCapacity (void);
 
     void SetMaximunBatteryCapacity (double maximunBatteryCapacity);
+
+    double GetMaximumPower (void);
+
+    void SetMaximumPower (double maximumPower);
+
+    double GetVehicleMass (void);
+
+    void SetVehicleMass (double vehicleMass);
+
+    double GetFrontSurfaceArea (void);
+
+    void SetFrontSurfaceArea (double frontSurfaceArea);
+
+    double GetAirDragCoefficient (void);
+
+    void SetAirDragCoefficient (double airDragCoefficient);
+
+    double GetInternalMomentOfInertia (void);
+
+    void SetInternalMomentOfInertia (double internalMomentOfInertia);
+
+    double GetRadialDragCoefficient (void);
+
+    void SetRadialDragCoefficient (double radialDragCoefficient);
+
+    double GetRollDragCoefficient (void);
+
+    void SetRollDragCoefficient (double rollDragCoefficient);
+
+    double GetConstantPowerIntake (void);
+
+    void SetConstantPowerIntake(double constantPowerIntake);
+
+    double GetPropulsionEfficiency (void);
+
+    void SetPropulsionEfficiency (double propulsionEfficiency);
+
+    double GetRecuperationEfficiency (void);
+
+    void SetRecuperationEfficiency (double recuperationEfficiency);
+
+    double GetVelocity (void);
     
   private:
     double m_initialEnergyWh;
     double m_remainingEnergyWh;
     double m_maximumBatteryCapacity;
+    double m_maximumPower;
+    double m_vehicleMass;
+    double m_frontSurfaceArea;
+    double m_airDragCoefficient;
+    double m_internalMomentOfInertia;
+    double m_radialDragCoefficient;
+    double m_rollDragCoefficient;
+    double m_constantPowerIntake;
+    double m_propulsionEfficiency;
+    double m_recuperationEfficiency;
+    Ptr<const MobilityModel> m_mobilityModel;
     Time m_lastUpdateTime;
-
   };
 
 } // namespace ns3

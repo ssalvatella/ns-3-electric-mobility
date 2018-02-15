@@ -21,12 +21,12 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <iomanip>
 
 #include "ns3/core-module.h"
 #include "ns3/node-list.h"
 #include "ns3/node.h"
 #include "ns3/log.h"
-#include "ns3/mobility-module.h"
 #include "ns3/mobility-module.h"
 #include "ns3/ns2-mobility-helper.h"
 #include "electric-mobility-helper.h"
@@ -52,20 +52,26 @@ namespace ns3 {
     uint32_t nodeId = GetNodeIdFromContext(context);
  
     Vector pos = mobility->GetPosition (); // Get position
-    Vector vel = mobility->GetVelocity (); // Get velocity
 
     ElectricVehicleEnergyModel * energyModel = &((*(*m_electricVehicleEnergyModels).find(nodeId)).second);
+    energyModel->SetMobilityModel (mobility);
     energyModel->UpdateEnergySource ();
 
     // Prints position, velocities and energy consumption
-    std::cout << Simulator::Now ().GetMilliSeconds () << "\tNode=" << nodeId << "\tPOS: x=" << pos.x << "\ty=" << pos.y
-        << "\tz=" << pos.z << ";\tVEL: x=" << vel.x << "\ty=" << vel.y
-        << "\tz=" << vel.z << "\tInitial Energy=" << energyModel->GetInitialEnergy () 
-        << "\tRemaining Energy=" << energyModel->GetRemainingEnergy () << std::endl; 
+    std::cout << Simulator::Now ().GetMilliSeconds () 
+        << "\tNode=" << nodeId 
+        << "\tPOS: x=" << pos.x 
+        << "\ty=" << pos.y
+        << "\tz=" << pos.z 
+        << ";\tVEL(m/s) = " << energyModel->GetVelocity ()  
+        << "\tInitial Energy(Wh) = " << energyModel->GetInitialEnergy ()
+        << "\tRemaining Energy(Wh) = " << energyModel->GetRemainingEnergy () 
+        << "\tBattery Level(%) = " << energyModel->GetEnergyFraction () * 100
+        << std::endl;
   }   
 
   void 
-  ElectricMobilityHelper::Install (void) 
+  ElectricMobilityHelper::Install (void)
   {
 
     // open log file for output
@@ -97,7 +103,8 @@ namespace ns3 {
       Ptr<Node> n = NodeList::GetNode (i);
       ElectricVehicleEnergyModel electricVehicleEnergyModel = ElectricVehicleEnergyModel ();
       electricVehicleEnergyModel.SetNode(n);
-      electricVehicleEnergyModel.SetInitialEnergy (1000 + i);
+      electricVehicleEnergyModel.SetMaximunBatteryCapacity (50000);
+      electricVehicleEnergyModel.SetInitialEnergy (25000);
       m_electricVehicleEnergyModels.insert ( std::pair<uint32_t,ElectricVehicleEnergyModel>(i,electricVehicleEnergyModel) );
     }
   }
