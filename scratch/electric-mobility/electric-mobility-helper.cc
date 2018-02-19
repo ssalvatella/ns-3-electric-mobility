@@ -101,11 +101,20 @@ namespace ns3 {
     for (i = 0; i < NodeList::GetNNodes (); i++) 
     {
       Ptr<Node> n = NodeList::GetNode (i);
-      ElectricVehicleEnergyModel electricVehicleEnergyModel = ElectricVehicleEnergyModel ();
-      electricVehicleEnergyModel.SetNode(n);
-      electricVehicleEnergyModel.SetMaximunBatteryCapacity (50000);
-      electricVehicleEnergyModel.SetInitialEnergy (25000);
-      m_electricVehicleEnergyModels.insert ( std::pair<uint32_t,ElectricVehicleEnergyModel>(i,electricVehicleEnergyModel) );
+      ElectricVehicleEnergyModel energyModel = ElectricVehicleEnergyModel ();
+      energyModel.SetNode(n);
+      energyModel.SetVehicleMass (10000);
+      energyModel.SetFrontSurfaceArea (6);
+      energyModel.SetAirDragCoefficient (0.6);
+      energyModel.SetInternalMomentOfInertia (0.01);
+      energyModel.SetRadialDragCoefficient (0.5);
+      energyModel.SetRollDragCoefficient (0.01);
+      energyModel.SetConstantPowerIntake (100);
+      energyModel.SetPropulsionEfficiency (0.9);
+      energyModel.SetRecuperationEfficiency (0.9);
+      energyModel.SetMaximunBatteryCapacity (24000);
+      energyModel.SetInitialEnergy (24000);
+      m_electricVehicleEnergyModels.insert ( std::pair<uint32_t,ElectricVehicleEnergyModel>(i,energyModel) );
     }
   }
 
