@@ -27,7 +27,7 @@
 #include <string>
 
 #include "ns3/ns2-mobility-helper.h"
-#include "electric-vehicle-energy-model.h"
+#include "electric-vehicle-consumption-model.h"
 
 namespace ns3 {
 
@@ -48,18 +48,18 @@ public:
    */
   void Install (void);
 
-  std::map<uint32_t, ElectricVehicleEnergyModel> GetElectricVehicleEnergyModels (void);
+  std::map<uint32_t, ElectricVehicleConsumptionModel> GetElectricVehicleConsumptionModels (void);
 
 
 private:
-  void CreateElectricVehicleEnergyModels (void);
+  void CreateElectricVehicleConsumptionModels (void);
 
 private:
   std::string m_filename; // filename of file containing the vehicle attributes
   Ns2MobilityHelper m_ns2; // ns2 mobility helper for access the mobility of nodes
   std::string m_logFile; // log file output
 
-  std::map<uint32_t, ElectricVehicleEnergyModel> m_electricVehicleEnergyModels;
+  std::map<uint32_t, ElectricVehicleConsumptionModel> m_electricVehicleConsumptionModels;
 };
 
   uint32_t GetNodeIdFromContext(std::string context);

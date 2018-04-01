@@ -45,17 +45,16 @@ namespace ns3 {
   // Prints actual position and velocity when a course change event occurs
   static
   void
-  CourseChange (std::map<uint32_t, ElectricVehicleEnergyModel> *m_electricVehicleEnergyModels, std::string context, Ptr<const MobilityModel> mobility)
+  CourseChange (std::map<uint32_t, ElectricVehicleConsumptionModel> *m_electricVehicleConsumptionModels, std::string context, Ptr<const MobilityModel> mobility)
   {
-
     // Get the node Id from the context of callback
     uint32_t nodeId = GetNodeIdFromContext(context);
  
     Vector pos = mobility->GetPosition (); // Get position
 
-    ElectricVehicleEnergyModel * energyModel = &((*(*m_electricVehicleEnergyModels).find(nodeId)).second);
-    energyModel->SetMobilityModel (mobility);
-    energyModel->UpdateEnergySource ();
+    ElectricVehicleConsumptionModel * consumptionModel = &((*(*m_electricVehicleConsumptionModels).find(nodeId)).second);
+    consumptionModel->SetMobilityModel (mobility);
+    consumptionModel->UpdateConsumption ();
 
     // Prints position, velocities and energy consumption
     std::cout << Simulator::Now ().GetMilliSeconds () 
@@ -63,12 +62,12 @@ namespace ns3 {
         << "\tPOS: x=" << pos.x 
         << "\ty=" << pos.y
         << "\tz=" << pos.z 
-        << ";\tVEL(m/s) = " << energyModel->GetVelocity ()  
-        << "\tInitial Energy(Wh) = " << energyModel->GetInitialEnergy ()
-        << "\tRemaining Energy(Wh) = " << energyModel->GetRemainingEnergy () 
-        << "\tBattery Level(%) = " << energyModel->GetEnergyFraction () * 100
+        //<< ";\tVEL(m/s) = " << consumptionModel->GetVelocity ()  
+        //<< "\tInitial Energy(Wh) = " << consumptionModel->GetInitialEnergy ()
+        //<< "\tRemaining Energy(Wh) = " << consumptionModel->GetRemainingEnergy () 
+        //<< "\tBattery Level(%) = " << consumptionModel->GetEnergyFraction () * 100
         << std::endl;
-  }   
+  }
 
   void 
   ElectricMobilityHelper::Install (void)
@@ -78,16 +77,16 @@ namespace ns3 {
     std::ofstream os;
     os.open (m_logFile.c_str ());
 
-    CreateElectricVehicleEnergyModels ();
+    CreateElectricVehicleConsumptionModels ();
     // Configure callback for logging
     Config::Connect ("/NodeList/*/$ns3::MobilityModel/CourseChange",
-                    MakeBoundCallback (&CourseChange, &m_electricVehicleEnergyModels));
+                    MakeBoundCallback (&CourseChange, &m_electricVehicleConsumptionModels));
   }
 
-  std::map<uint32_t, ElectricVehicleEnergyModel>
-  ElectricMobilityHelper::GetElectricVehicleEnergyModels (void)
+  std::map<uint32_t, ElectricVehicleConsumptionModel>
+  ElectricMobilityHelper::GetElectricVehicleConsumptionModels (void)
   {
-    return m_electricVehicleEnergyModels;
+    return m_electricVehicleConsumptionModels;
   }
 
 /*
@@ -95,26 +94,26 @@ namespace ns3 {
  */
 
   void
-  ElectricMobilityHelper::CreateElectricVehicleEnergyModels (void)
+  ElectricMobilityHelper::CreateElectricVehicleConsumptionModels (void)
   {
     uint32_t i;
     for (i = 0; i < NodeList::GetNNodes (); i++) 
     {
       Ptr<Node> n = NodeList::GetNode (i);
-      ElectricVehicleEnergyModel energyModel = ElectricVehicleEnergyModel ();
-      energyModel.SetNode(n);
-      energyModel.SetVehicleMass (10000);
-      energyModel.SetFrontSurfaceArea (6);
-      energyModel.SetAirDragCoefficient (0.6);
-      energyModel.SetInternalMomentOfInertia (0.01);
-      energyModel.SetRadialDragCoefficient (0.5);
-      energyModel.SetRollDragCoefficient (0.01);
-      energyModel.SetConstantPowerIntake (100);
-      energyModel.SetPropulsionEfficiency (0.9);
-      energyModel.SetRecuperationEfficiency (0.9);
-      energyModel.SetMaximunBatteryCapacity (24000);
-      energyModel.SetInitialEnergy (24000);
-      m_electricVehicleEnergyModels.insert ( std::pair<uint32_t,ElectricVehicleEnergyModel>(i,energyModel) );
+      ElectricVehicleConsumptionModel consumptionModel = ElectricVehicleConsumptionModel ();
+      consumptionModel.SetNode(n);
+      consumptionModel.SetVehicleMass (10000);
+      consumptionModel.SetFrontSurfaceArea (6);
+      consumptionModel.SetAirDragCoefficient (0.6);
+      consumptionModel.SetInternalMomentOfInertia (0.01);
+      consumptionModel.SetRadialDragCoefficient (0.5);
+      consumptionModel.SetRollDragCoefficient (0.01);
+      consumptionModel.SetConstantPowerIntake (100);
+      consumptionModel.SetPropulsionEfficiency (0.9);
+      consumptionModel.SetRecuperationEfficiency (0.9);
+      consumptionModel.SetMaximunBatteryCapacity (24000);
+      consumptionModel.SetInitialEnergy (24000);
+      m_electricVehicleConsumptionModels.insert ( std::pair<uint32_t, ElectricVehicleConsumptionModel>(i,consumptionModel) );
     }
   }
 

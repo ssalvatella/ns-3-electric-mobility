@@ -22,7 +22,7 @@
 #define ELECTRIC_VEHICLE_ENERGY_MODEL_H
 
 #include "ns3/traced-value.h"
-#include "ns3/energy-source.h"
+#include "consumption-model.h"
 #include "ns3/nstime.h"
 #include "ns3/event-id.h"
 #include "ns3/mobility-module.h"
@@ -33,17 +33,17 @@
 
 namespace ns3 {
 
-  class ElectricVehicleEnergyModel : public EnergySource
+  class ElectricVehicleConsumptionModel : public ConsumptionModel
   {
   public:
 
     static TypeId GetTypeId (void);
 
-    ElectricVehicleEnergyModel ();
+    ElectricVehicleConsumptionModel ();
 
-    ~ElectricVehicleEnergyModel (void);
+    ~ElectricVehicleConsumptionModel (void);
 
-    void UpdateEnergySource (void);
+    virtual void UpdateConsumption (void);
 
   private:
 
@@ -73,10 +73,6 @@ namespace ns3 {
     * Getters and Setters
     */
   public:
-
-    void SetMobilityModel (Ptr<const MobilityModel> mobilityModel);
-
-    Ptr<const MobilityModel> GetMobilityModel (void);
 
     double GetInitialEnergy (void) const;
 
@@ -155,11 +151,7 @@ namespace ns3 {
     double m_rollDragCoefficient;                 // roll drag coefficient
     double m_constantPowerIntake;                 // constant power intake of vehicle in W
     double m_propulsionEfficiency;                // propulsion efficiency factor
-    double m_recuperationEfficiency;              // recuperation efficiency factor 
-    Ptr<const MobilityModel> m_mobilityModel;     // pointer to mobility model
-    Vector m_lastPosition;
-    Vector m_lastVelocity;
-    Time m_lastUpdateTime;
+    double m_recuperationEfficiency;              // recuperation efficiency factor
     Time m_timeFromLastUpdate;
   };
 
