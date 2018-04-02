@@ -18,6 +18,7 @@
  * Author: Samuel Salvatella <ssalvatellaperez@gmail.com>
  */
 
+#include "ns3/core-module.h"
 #include "ns3/log.h"
 #include "ns3/ptr.h"
 #include "ns3/assert.h"
@@ -51,13 +52,6 @@ namespace ns3
     ConsumptionModel::~ConsumptionModel ()
     {
         NS_LOG_FUNCTION (this);
-    }
-
-    void
-    ConsumptionModel::BindMobility ()
-    {
-        NS_LOG_FUNCTION (this);
-        
     }
 
     void

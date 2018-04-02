@@ -35,8 +35,8 @@ namespace ns3 {
 
   NS_LOG_COMPONENT_DEFINE ("ElectricMobilityHelper");
 
-  ElectricMobilityHelper::ElectricMobilityHelper (std::string filename, Ns2MobilityHelper ns2, std::string logFile)
-    : m_filename (filename), m_ns2 (ns2), m_logFile (logFile)
+  ElectricMobilityHelper::ElectricMobilityHelper (std::string filename, Ns2MobilityHelper ns2)
+    : m_filename (filename), m_ns2 (ns2)
   {
     std::ifstream file (m_filename.c_str (), std::ios::in);
     if (!(file.is_open ())) NS_FATAL_ERROR("Could not open vehicule attributes file " << m_filename.c_str() << " for reading, aborting here \n");
@@ -45,48 +45,22 @@ namespace ns3 {
   // Prints actual position and velocity when a course change event occurs
   static
   void
-  CourseChange (std::map<uint32_t, ElectricVehicleConsumptionModel> *m_electricVehicleConsumptionModels, std::string context, Ptr<const MobilityModel> mobility)
+  CourseChange (std::string context, Ptr<const MobilityModel> mobility)
   {
     // Get the node Id from the context of callback
-    uint32_t nodeId = GetNodeIdFromContext(context);
- 
-    Vector pos = mobility->GetPosition (); // Get position
-
-    ElectricVehicleConsumptionModel * consumptionModel = &((*(*m_electricVehicleConsumptionModels).find(nodeId)).second);
-    consumptionModel->SetMobilityModel (mobility);
+    Ptr<Node> n = GetNodeFromContext(context);
+    Ptr<ElectricVehicleConsumptionModel> consumptionModel = n->GetObject<ElectricVehicleConsumptionModel> ();
     consumptionModel->UpdateConsumption ();
-
-    // Prints position, velocities and energy consumption
-    std::cout << Simulator::Now ().GetMilliSeconds () 
-        << "\tNode=" << nodeId 
-        << "\tPOS: x=" << pos.x 
-        << "\ty=" << pos.y
-        << "\tz=" << pos.z 
-        //<< ";\tVEL(m/s) = " << consumptionModel->GetVelocity ()  
-        //<< "\tInitial Energy(Wh) = " << consumptionModel->GetInitialEnergy ()
-        //<< "\tRemaining Energy(Wh) = " << consumptionModel->GetRemainingEnergy () 
-        //<< "\tBattery Level(%) = " << consumptionModel->GetEnergyFraction () * 100
-        << std::endl;
   }
 
   void 
   ElectricMobilityHelper::Install (void)
   {
 
-    // open log file for output
-    std::ofstream os;
-    os.open (m_logFile.c_str ());
-
     CreateElectricVehicleConsumptionModels ();
     // Configure callback for logging
     Config::Connect ("/NodeList/*/$ns3::MobilityModel/CourseChange",
-                    MakeBoundCallback (&CourseChange, &m_electricVehicleConsumptionModels));
-  }
-
-  std::map<uint32_t, ElectricVehicleConsumptionModel>
-  ElectricMobilityHelper::GetElectricVehicleConsumptionModels (void)
-  {
-    return m_electricVehicleConsumptionModels;
+                    MakeCallback (&CourseChange));
   }
 
 /*
@@ -100,25 +74,30 @@ namespace ns3 {
     for (i = 0; i < NodeList::GetNNodes (); i++) 
     {
       Ptr<Node> n = NodeList::GetNode (i);
-      ElectricVehicleConsumptionModel consumptionModel = ElectricVehicleConsumptionModel ();
-      consumptionModel.SetNode(n);
-      consumptionModel.SetVehicleMass (10000);
-      consumptionModel.SetFrontSurfaceArea (6);
-      consumptionModel.SetAirDragCoefficient (0.6);
-      consumptionModel.SetInternalMomentOfInertia (0.01);
-      consumptionModel.SetRadialDragCoefficient (0.5);
-      consumptionModel.SetRollDragCoefficient (0.01);
-      consumptionModel.SetConstantPowerIntake (100);
-      consumptionModel.SetPropulsionEfficiency (0.9);
-      consumptionModel.SetRecuperationEfficiency (0.9);
-      consumptionModel.SetMaximunBatteryCapacity (24000);
-      consumptionModel.SetInitialEnergy (24000);
-      m_electricVehicleConsumptionModels.insert ( std::pair<uint32_t, ElectricVehicleConsumptionModel>(i,consumptionModel) );
+      Ptr<ElectricVehicleConsumptionModel> consumptionModel = CreateObject<ElectricVehicleConsumptionModel> ();
+      consumptionModel->SetNode(n);
+
+      // All consumption model has a mobility model
+      Ptr<MobilityModel> mobility = n->GetObject<MobilityModel> ();
+      consumptionModel->SetMobilityModel (mobility);
+
+      consumptionModel->SetVehicleMass (10000);
+      consumptionModel->SetFrontSurfaceArea (6);
+      consumptionModel->SetAirDragCoefficient (0.6);
+      consumptionModel->SetInternalMomentOfInertia (0.01);
+      consumptionModel->SetRadialDragCoefficient (0.5);
+      consumptionModel->SetRollDragCoefficient (0.01);
+      consumptionModel->SetConstantPowerIntake (100);
+      consumptionModel->SetPropulsionEfficiency (0.9);
+      consumptionModel->SetRecuperationEfficiency (0.9);
+      consumptionModel->SetMaximunBatteryCapacity (24000);
+      consumptionModel->SetInitialEnergy (24000);
+      n->AggregateObject (consumptionModel);
     }
   }
 
-  uint32_t 
-  GetNodeIdFromContext (std::string context)
+  Ptr<Node> 
+  GetNodeFromContext (std::string context)
   {
     std::string delimiter = "/";
 
@@ -131,10 +110,10 @@ namespace ns3 {
         context.erase(0, i + delimiter.length());
         if (count == 3)
         {
-          return std::stoi(token);
+          return NodeList::GetNode (std::stoi(token));
         }
     }
-    return 0;
+    return NULL;
   }  
 
 } // namespace ns3

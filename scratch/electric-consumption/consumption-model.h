@@ -38,8 +38,6 @@ public:
 
     virtual void UpdateConsumption (void) = 0;
 
-    void BindMobility (void);
-
     /**
      * \brief Sets pointer to node containing this ConsumptionModel.
      *

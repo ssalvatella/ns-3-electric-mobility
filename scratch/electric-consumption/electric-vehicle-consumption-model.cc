@@ -36,7 +36,15 @@ namespace ns3 {
     TypeId
     ElectricVehicleConsumptionModel::GetTypeId (void)
     {
-      static TypeId tid = TypeId ("ns3::ElectricVehicleConsumptionModel");
+      static TypeId tid = TypeId ("ns3::ElectricVehicleConsumptionModel")
+        .SetParent<ConsumptionModel> ()
+        .SetGroupName ("Consumption")
+        .AddConstructor<ElectricVehicleConsumptionModel> ()
+        .AddTraceSource ("RemainingEnergy",
+                        "Remaining energy in vehicle in Wh.",
+                        MakeTraceSourceAccessor (&ElectricVehicleConsumptionModel::m_remainingEnergyWh),
+                        "ns3::TracedValueCallback::Double")
+      ;
       return tid;
     }
 
@@ -48,7 +56,7 @@ namespace ns3 {
     ElectricVehicleConsumptionModel::~ElectricVehicleConsumptionModel ()
     {
       NS_LOG_FUNCTION (this);
-    }    
+    }
 
     void
     ElectricVehicleConsumptionModel::UpdateConsumption (void)
@@ -89,10 +97,10 @@ namespace ns3 {
       double vehicleEnergyLast = CalculateVehicleEnergy (lastVelocity, lastHeight);
       double energyLoss = CalculateEnergyLoss (lastVelocity, 1); // dirty distanceCovered, must be changed
 
-      std::cout << "vehicleEnergyNow: "  << vehicleEnergyNow * JOULES_TO_WH << "\t"
-                << "vehicleEnergyLast: " << vehicleEnergyLast * JOULES_TO_WH << "\t"
-                << "energyLoss: " << energyLoss * JOULES_TO_WH << "\t"
-                << "totalEnergyGain: " << (vehicleEnergyNow - vehicleEnergyLast - energyLoss) * JOULES_TO_WH << "\n";
+      // std::cout << "vehicleEnergyNow: "  << vehicleEnergyNow * JOULES_TO_WH << "\t"
+      //           << "vehicleEnergyLast: " << vehicleEnergyLast * JOULES_TO_WH << "\t"
+      //           << "energyLoss: " << energyLoss * JOULES_TO_WH << "\t"
+      //           << "totalEnergyGain: " << (vehicleEnergyNow - vehicleEnergyLast - energyLoss) * JOULES_TO_WH << "\n";
 
       return vehicleEnergyNow
              - vehicleEnergyLast

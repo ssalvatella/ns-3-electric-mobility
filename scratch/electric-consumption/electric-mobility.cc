@@ -51,6 +51,9 @@
 #include <fstream>
 #include <sstream>
 
+#include "ns3/log.h"
+#include "ns3/node-list.h"
+#include "ns3/node.h"
 #include "ns3/core-module.h"
 #include "ns3/mobility-module.h"
 #include "ns3/mobility-module.h"
@@ -58,13 +61,29 @@
 #include "electric-mobility-helper.h"
 
 using namespace ns3;
+ 
+
+void RemainingEnergyTrace (std::string context, double previousEnergy, double currentEnergy)
+{
+  Ptr<Node> node = GetNodeFromContext(context);
+  Ptr<ElectricVehicleConsumptionModel> consumptionModel = node->GetObject<ElectricVehicleConsumptionModel> ();
+  Ptr<const MobilityModel> mobilityModel = consumptionModel->GetMobilityModel ();
+  Vector pos = mobilityModel->GetPosition ();
+
+  NS_LOG_UNCOND (node->GetId () << "\t"
+    << pos.x << "\t"
+    << pos.y << "\t"
+    << pos.z << "\t"
+    << consumptionModel->GetVelocity () << "\t"
+    << consumptionModel->GetEnergyFraction () << "\t"
+    << currentEnergy);
+}
 
 // Example to use ns2 traces file and xml file to simulate consumption of electric vehicles
 int main (int argc, char *argv[])
 {
   std::string traceFile;
   std::string vehicleAttributesFile;
-  std::string logFile;
 
   int    nodeNum;
   double duration;
@@ -73,19 +92,18 @@ int main (int argc, char *argv[])
   CommandLine cmd;
   cmd.AddValue ("traceFile", "Ns2 movement trace file", traceFile);
   cmd.AddValue ("vehicleAttributes", "Vehicle Attributes", vehicleAttributesFile);
-  cmd.AddValue ("logFile", "Log file", logFile);
   cmd.AddValue ("nodeNum", "Number of nodes", nodeNum);
   cmd.AddValue ("duration", "Duration of Simulation", duration);
   cmd.Parse (argc,argv);
 
   // Check command line arguments
-  if (traceFile.empty () || vehicleAttributesFile.empty () || nodeNum <= 0 || duration <= 0 || logFile.empty ())
+  if (traceFile.empty () || vehicleAttributesFile.empty () || nodeNum <= 0 || duration <= 0)
     {
       std::cout << "Usage of " << argv[0] << " :\n\n"
       "./waf --run \"electric-mobility"
       " --traceFile=src/mobility/examples/default.ns_movements"
       " --vehicleAttributes=src/mobility/examples/vehicleAttributes.xml"
-      " --nodeNum=2 --duration=100.0 --logFile=electric-mobility.log\" \n\n"
+      " --nodeNum=2 --duration=100.0\" \n\n"
       "NOTE: ns2-traces-file could be an absolute or relative path. You could use the file default.ns_movements\n"
       "      included in the same directory of this example file.\n\n"
       "NOTE 2: Number of nodes present in the trace file must match with the command line argument and must\n"
@@ -101,7 +119,7 @@ int main (int argc, char *argv[])
   Ns2MobilityHelper ns2 = Ns2MobilityHelper (traceFile);
 
   // Create ElectricMobilityHelper with the xml of vehicle attributes
-  ElectricMobilityHelper electricMobility = ElectricMobilityHelper (vehicleAttributesFile, ns2, logFile);
+  ElectricMobilityHelper electricMobility = ElectricMobilityHelper (vehicleAttributesFile, ns2);
 
   // Create all nodes.
   NodeContainer stas;
@@ -110,10 +128,15 @@ int main (int argc, char *argv[])
   ns2.Install (); // configure movements for each node, while reading trace file
   electricMobility.Install (); // configure the vehicle attributes for each node
 
+  Config::Connect ("/NodeList/*/$ns3::ElectricVehicleConsumptionModel/RemainingEnergy",
+                   MakeCallback (&RemainingEnergyTrace));
+
+  // Log a header for data
+  NS_LOG_UNCOND("N\tx\ty\tz\tVel(m/s)\tEnergy Level(%)\tCurrentEnergy(Wh)");
+
   Simulator::Stop (Seconds (duration));
   Simulator::Run ();
   Simulator::Destroy ();
 
-  //os.close (); // close log file
   return 0;
 }

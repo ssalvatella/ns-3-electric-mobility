@@ -18,8 +18,8 @@
  * Author: Samuel Salvatella <ssalvatellaperez@gmail.com>
  */
 
-#ifndef ELECTRIC_VEHICLE_ENERGY_MODEL_H
-#define ELECTRIC_VEHICLE_ENERGY_MODEL_H
+#ifndef ELECTRIC_VEHICLE_CONSUMPTION_MODEL_H
+#define ELECTRIC_VEHICLE_CONSUMPTION_MODEL_H
 
 #include "ns3/traced-value.h"
 #include "consumption-model.h"
@@ -140,7 +140,7 @@ namespace ns3 {
     
   private:
     double m_initialEnergyWh;                     // initial energy in Wh
-    double m_remainingEnergyWh;                   // remaining energy in Wh
+    TracedValue<double> m_remainingEnergyWh;      // remaining energy in Wh
     double m_maximumBatteryCapacity;              // maximum battery capacity in Wh
     double m_maximumPower;                        // maximum power in W
     double m_vehicleMass;                         // vehicle mass in Kg
@@ -157,4 +157,4 @@ namespace ns3 {
 
 } // namespace ns3
 
-#endif /* ELECTRIC_VEHICLE_ENERGY_MODEL_H */
+#endif /* ELECTRIC_VEHICLE_CONSUMPTION_MODEL_H */
