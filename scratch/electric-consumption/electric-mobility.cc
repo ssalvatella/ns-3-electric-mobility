@@ -76,7 +76,8 @@ void RemainingEnergyTrace (std::string context, double previousEnergy, double cu
     << pos.z << "\t"
     << consumptionModel->GetVelocity () << "\t"
     << consumptionModel->GetEnergyFraction () << "\t"
-    << currentEnergy);
+    << currentEnergy << "\t"
+    << consumptionModel->GetTotalEnergyConsumed ());
 }
 
 // Example to use ns2 traces file and xml file to simulate consumption of electric vehicles
@@ -113,8 +114,6 @@ int main (int argc, char *argv[])
       return 0;
     }
 
-
-
   // Create Ns2MobilityHelper with the specified trace log file as parameter
   Ns2MobilityHelper ns2 = Ns2MobilityHelper (traceFile);
 
@@ -132,7 +131,7 @@ int main (int argc, char *argv[])
                    MakeCallback (&RemainingEnergyTrace));
 
   // Log a header for data
-  NS_LOG_UNCOND("N\tx\ty\tz\tVel(m/s)\tEnergy Level(%)\tCurrentEnergy(Wh)");
+  NS_LOG_UNCOND("#\tx\ty\tz\tVel(m/s)\tEnergy Level(%)\tCurrent Energy(Wh)\tTotal Consumed(Wh)");
 
   Simulator::Stop (Seconds (duration));
   Simulator::Run ();

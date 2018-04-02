@@ -73,8 +73,10 @@ namespace ns3 {
       {
         return;
       }
-
-      IncreaseRemainingEnergy (CalculateEnergyGain () * JOULES_TO_WH);
+      
+      double energyGain = CalculateEnergyGain () * JOULES_TO_WH;
+      IncreaseRemainingEnergy (energyGain);
+      IncreaseTotalEnergyConsumed (-energyGain);
 
       SetLastUpdateTime (Simulator::Now ());
       SaveLastPosAndVel ();
@@ -253,6 +255,27 @@ namespace ns3 {
     {
       NS_LOG_FUNCTION (this << energyIncrease);
       SetRemainingEnergy (GetRemainingEnergy() + energyIncrease);
+    }
+
+    double
+    ElectricVehicleConsumptionModel::GetTotalEnergyConsumed (void)
+    {
+      NS_LOG_FUNCTION (this);
+      return m_totalEnergyConsumed;
+    }
+
+    void
+    ElectricVehicleConsumptionModel::SetTotalEnergyConsumed (double energyConsumed)
+    {
+      NS_LOG_FUNCTION (this << energyConsumed);
+      m_totalEnergyConsumed = energyConsumed;
+    }
+
+    void
+    ElectricVehicleConsumptionModel::IncreaseTotalEnergyConsumed (double energyConsumed)
+    {
+      NS_LOG_FUNCTION (this << energyConsumed);
+      SetTotalEnergyConsumed (GetTotalEnergyConsumed () + energyConsumed);
     }
 
     double

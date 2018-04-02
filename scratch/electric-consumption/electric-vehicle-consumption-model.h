@@ -88,6 +88,12 @@ namespace ns3 {
 
     void IncreaseRemainingEnergy (double energyIncrease);
 
+    double GetTotalEnergyConsumed (void);
+
+    void SetTotalEnergyConsumed (double energyConsumed);
+
+    void IncreaseTotalEnergyConsumed (double energyConsumed);
+
     double GetEnergyFraction (void);
 
     double GetMaximunBatteryCapacity (void);
@@ -141,6 +147,7 @@ namespace ns3 {
   private:
     double m_initialEnergyWh;                     // initial energy in Wh
     TracedValue<double> m_remainingEnergyWh;      // remaining energy in Wh
+    double m_totalEnergyConsumed;                 // total energy consumed in Wh
     double m_maximumBatteryCapacity;              // maximum battery capacity in Wh
     double m_maximumPower;                        // maximum power in W
     double m_vehicleMass;                         // vehicle mass in Kg
