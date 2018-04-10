@@ -22,21 +22,22 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <libxml/encoding.h>
+#include <libxml/xmlwriter.h>
 
 #include "ns3/core-module.h"
 #include "ns3/node-list.h"
 #include "ns3/node.h"
 #include "ns3/log.h"
 #include "ns3/mobility-module.h"
-#include "ns3/ns2-mobility-helper.h"
 #include "electric-mobility-helper.h"
 
 namespace ns3 {
 
   NS_LOG_COMPONENT_DEFINE ("ElectricMobilityHelper");
 
-  ElectricMobilityHelper::ElectricMobilityHelper (std::string filename, Ns2MobilityHelper ns2)
-    : m_filename (filename), m_ns2 (ns2)
+  ElectricMobilityHelper::ElectricMobilityHelper (std::string filename)
+    : m_filename (filename)
   {
     std::ifstream file (m_filename.c_str (), std::ios::in);
     if (!(file.is_open ())) NS_FATAL_ERROR("Could not open vehicule attributes file " << m_filename.c_str() << " for reading, aborting here \n");
@@ -56,8 +57,7 @@ namespace ns3 {
   void 
   ElectricMobilityHelper::Install (void)
   {
-
-    CreateElectricVehicleConsumptionModels ();
+    LoadXml ();
     // Configure callback for logging
     Config::Connect ("/NodeList/*/$ns3::MobilityModel/CourseChange",
                     MakeCallback (&CourseChange));
@@ -68,32 +68,144 @@ namespace ns3 {
  */
 
   void
-  ElectricMobilityHelper::CreateElectricVehicleConsumptionModels (void)
+  ElectricMobilityHelper::LoadXml (void)
   {
-    uint32_t i;
-    for (i = 0; i < NodeList::GetNNodes (); i++) 
+    m_xmlDoc = NULL;
+    /*parse the file and get the DOM */
+    m_xmlDoc = xmlReadFile(m_filename.c_str (), NULL, 0);
+
+    // case of failure
+    if (m_xmlDoc == NULL)
     {
-      Ptr<Node> n = NodeList::GetNode (i);
-      Ptr<ElectricVehicleConsumptionModel> consumptionModel = CreateObject<ElectricVehicleConsumptionModel> ();
-      consumptionModel->SetNode(n);
-
-      // All consumption model has a mobility model
-      Ptr<MobilityModel> mobility = n->GetObject<MobilityModel> ();
-      consumptionModel->SetMobilityModel (mobility);
-
-      consumptionModel->SetVehicleMass (10000);
-      consumptionModel->SetFrontSurfaceArea (6);
-      consumptionModel->SetAirDragCoefficient (0.6);
-      consumptionModel->SetInternalMomentOfInertia (0.01);
-      consumptionModel->SetRadialDragCoefficient (0.5);
-      consumptionModel->SetRollDragCoefficient (0.01);
-      consumptionModel->SetConstantPowerIntake (100);
-      consumptionModel->SetPropulsionEfficiency (0.9);
-      consumptionModel->SetRecuperationEfficiency (0.9);
-      consumptionModel->SetMaximunBatteryCapacity (24000);
-      consumptionModel->SetInitialEnergy (24000);
-      n->AggregateObject (consumptionModel);
+      NS_LOG_ERROR ("Could not parse XML file " << m_filename);
+      return;
     }
+
+    xmlNode *rootElement = xmlDocGetRootElement (m_xmlDoc);
+    xmlNode *firstVehicle = rootElement->children;
+    xmlNode *currentNode = NULL;
+
+    // create a consumption model for each vehicle especified in XML
+    for (currentNode = firstVehicle; currentNode; currentNode = currentNode->next) {
+        if (currentNode->type == XML_ELEMENT_NODE) {
+            CreateModelFromXml (currentNode);
+        }
+    }
+
+    /*free the document */
+    xmlFreeDoc(m_xmlDoc);
+
+    /*
+     *Free the global variables that may
+     *have been allocated by the parser.
+     */
+    xmlCleanupParser();
+
+  }
+
+  void
+  ElectricMobilityHelper::CreateModelFromXml (xmlNode * xmlVehicleNode)
+  {
+    xmlNode *currentNode = NULL;
+
+    Ptr<ElectricVehicleConsumptionModel> consumptionModel = CreateObject<ElectricVehicleConsumptionModel> ();
+    uint32_t nodeId;
+
+    // read the node id of vehicle
+    for(xmlAttrPtr attr = xmlVehicleNode->properties; NULL != attr; attr = attr->next)
+    {
+      std::string name = Convert (attr->name);
+      if (name == "node")
+      {  
+        nodeId = std::stoi(Convert (attr->children->content));
+      } else {
+        NS_LOG_ERROR ("Node ID of vehicle is not defined.");
+        return;
+      }
+    }
+
+    Ptr<Node> node = NodeList::GetNode (nodeId);
+    if (node == NULL) {
+      NS_LOG_ERROR ("Node " << nodeId << " is not created in the simulation.");
+      return;
+    }
+
+    // read parameters of electric vehicle
+    for (currentNode = xmlVehicleNode->children; currentNode; currentNode = currentNode->next) {
+      if (currentNode->type == XML_ELEMENT_NODE) {
+        std::string clave;
+        std::string valor;
+        for(xmlAttrPtr attr = currentNode->properties; NULL != attr; attr = attr->next)
+        {
+          std::string name = Convert (attr->name);
+          if (name == "key")
+          {
+            clave = Convert (attr->children->content);
+          } else if (name == "value")
+          {
+            valor = Convert (attr->children->content);
+          } else
+          {
+            NS_LOG_ERROR ("Could not parse XML file. Check the XML structure.");
+            return;
+          }
+
+        }
+        if (clave.empty () || valor.empty ())
+        {
+          NS_LOG_ERROR ("Could not parse XML file. Check the XML structure.");
+          return;
+        }
+
+        // std::cout << clave << "=" << valor << "\n";
+
+        if (clave == "maximumBatteryCapacity")
+        {
+          consumptionModel->SetMaximunBatteryCapacity (std::stod (valor));
+        } else if (clave == "vehicleMass")
+        {
+          consumptionModel->SetVehicleMass (std::stod (valor));
+        } else if (clave == "frontSurfaceArea")
+        {
+          consumptionModel->SetFrontSurfaceArea (std::stod (valor));
+        } else if (clave == "airDragCoefficient")
+        {
+          consumptionModel->SetAirDragCoefficient (std::stod (valor));
+        } else if (clave == "internalMomentOfInertia")
+        {
+          consumptionModel->SetInternalMomentOfInertia (std::stod (valor));
+        } else if (clave == "radialDragCoefficient")
+        {
+          consumptionModel->SetRadialDragCoefficient (std::stod (valor));
+        } else if (clave == "rollDragCoefficient")
+        {
+          consumptionModel->SetRollDragCoefficient (std::stod (valor));
+        } else if (clave == "constantPowerIntake")
+        {
+          consumptionModel->SetConstantPowerIntake (std::stod (valor));
+        } else if (clave == "propulsionEfficiency")
+        {
+          consumptionModel->SetPropulsionEfficiency (std::stod (valor));
+        } else if (clave == "recuperationEfficiency")
+        {
+          consumptionModel->SetRecuperationEfficiency (std::stod (valor));
+        } else if (clave == "initialEnergy")
+        {
+          consumptionModel->SetInitialEnergy (std::stod (valor));
+        } else
+        {
+          NS_LOG_ERROR ("Could not parse XML file. Key " << clave << " unrecognized.");
+        }
+      }
+    }
+
+    
+    //all consumption model has a mobility model
+    Ptr<MobilityModel> mobility = node->GetObject<MobilityModel> ();
+    consumptionModel->SetMobilityModel (mobility);
+
+    //we add the consumption model to the node
+    node->AggregateObject (consumptionModel);
   }
 
   Ptr<Node> 
@@ -114,6 +226,13 @@ namespace ns3 {
         }
     }
     return NULL;
-  }  
+  }
+
+  std::string
+  Convert(const xmlChar * xmlChar)
+  {
+    char* a = (char *)xmlChar;
+    return std::string(a);
+  }
 
 } // namespace ns3

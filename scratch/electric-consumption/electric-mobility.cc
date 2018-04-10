@@ -70,7 +70,8 @@ void RemainingEnergyTrace (std::string context, double previousEnergy, double cu
   Ptr<const MobilityModel> mobilityModel = consumptionModel->GetMobilityModel ();
   Vector pos = mobilityModel->GetPosition ();
 
-  NS_LOG_UNCOND (node->GetId () << "\t"
+  NS_LOG_UNCOND (Simulator::Now ().GetMilliSeconds () << "\t"
+    << node->GetId () << "\t"
     << pos.x << "\t"
     << pos.y << "\t"
     << pos.z << "\t"
@@ -118,7 +119,7 @@ int main (int argc, char *argv[])
   Ns2MobilityHelper ns2 = Ns2MobilityHelper (traceFile);
 
   // Create ElectricMobilityHelper with the xml of vehicle attributes
-  ElectricMobilityHelper electricMobility = ElectricMobilityHelper (vehicleAttributesFile, ns2);
+  ElectricMobilityHelper electricMobility = ElectricMobilityHelper (vehicleAttributesFile);
 
   // Create all nodes.
   NodeContainer stas;
@@ -131,7 +132,7 @@ int main (int argc, char *argv[])
                    MakeCallback (&RemainingEnergyTrace));
 
   // Log a header for data
-  NS_LOG_UNCOND("#\tx\ty\tz\tVel(m/s)\tEnergy Level(%)\tCurrent Energy(Wh)\tTotal Consumed(Wh)");
+  NS_LOG_UNCOND("Time \t#\tx\ty\tz\tVel(m/s)\tEnergy Level(%)\tCurrent Energy(Wh)\tTotal Consumed(Wh)");
 
   Simulator::Stop (Seconds (duration));
   Simulator::Run ();

@@ -25,8 +25,9 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <libxml/encoding.h>
+#include <libxml/xmlwriter.h>
 
-#include "ns3/ns2-mobility-helper.h"
 #include "electric-vehicle-consumption-model.h"
 
 namespace ns3 {
@@ -38,7 +39,7 @@ public:
    * \param filename filename of file which contains the
    *        xml with vehicles attributes
    */
-  ElectricMobilityHelper (std::string filename, Ns2MobilityHelper ns2);
+  ElectricMobilityHelper (std::string filename);
 
   /**
    * Read the xml file and configure the movement
@@ -50,14 +51,17 @@ public:
 
 
 private:
-  void CreateElectricVehicleConsumptionModels (void);
+  void LoadXml (void);
+  void CreateModelFromXml (xmlNode * xmlNode);
 
 private:
   std::string m_filename; // filename of file containing the vehicle attributes
-  Ns2MobilityHelper m_ns2; // ns2 mobility helper for access the mobility of nodes
+  xmlDoc *m_xmlDoc;        // XML Document with XML nodes
 };
 
   Ptr<Node> GetNodeFromContext(std::string context);
+  std::string Convert(const xmlChar * xmlChar);
+
 
 } // namespace ns3
 
