@@ -70,7 +70,7 @@ void RemainingEnergyTrace (std::string context, double previousEnergy, double cu
   Ptr<const MobilityModel> mobilityModel = consumptionModel->GetMobilityModel ();
   Vector pos = mobilityModel->GetPosition ();
 
-  NS_LOG_UNCOND (Simulator::Now ().GetMilliSeconds () << "\t"
+  NS_LOG_UNCOND (Simulator::Now ().GetSeconds () << "\t"
     << node->GetId () << "\t"
     << pos.x << "\t"
     << pos.y << "\t"
@@ -78,6 +78,7 @@ void RemainingEnergyTrace (std::string context, double previousEnergy, double cu
     << consumptionModel->GetVelocity () << "\t"
     << consumptionModel->GetEnergyFraction () << "\t"
     << currentEnergy << "\t"
+    << consumptionModel->GetEnergyConsumed () << "\t"
     << consumptionModel->GetTotalEnergyConsumed ());
 }
 
@@ -89,6 +90,7 @@ int main (int argc, char *argv[])
 
   int    nodeNum;
   double duration;
+  double updateTime;
 
   // Parse command line attribute
   CommandLine cmd;
@@ -96,6 +98,7 @@ int main (int argc, char *argv[])
   cmd.AddValue ("vehicleAttributes", "Vehicle Attributes", vehicleAttributesFile);
   cmd.AddValue ("nodeNum", "Number of nodes", nodeNum);
   cmd.AddValue ("duration", "Duration of Simulation", duration);
+  cmd.AddValue ("updateTime", "Time between each update of electric vehicle consumption.", updateTime);
   cmd.Parse (argc,argv);
 
   // Check command line arguments
@@ -119,7 +122,7 @@ int main (int argc, char *argv[])
   Ns2MobilityHelper ns2 = Ns2MobilityHelper (traceFile);
 
   // Create ElectricMobilityHelper with the xml of vehicle attributes
-  ElectricMobilityHelper electricMobility = ElectricMobilityHelper (vehicleAttributesFile);
+  ElectricMobilityHelper electricMobility = ElectricMobilityHelper (vehicleAttributesFile, updateTime);
 
   // Create all nodes.
   NodeContainer stas;
@@ -132,10 +135,20 @@ int main (int argc, char *argv[])
                    MakeCallback (&RemainingEnergyTrace));
 
   // Log a header for data
-  NS_LOG_UNCOND("Time \t#\tx\ty\tz\tVel(m/s)\tEnergy Level(%)\tCurrent Energy(Wh)\tTotal Consumed(Wh)");
+  NS_LOG_UNCOND("Time \t#\tx\ty\tz\tVel(m/s)\tEnergy Level(%)\tCurrent Energy(Wh)\tEnergy Consumed(Wh)\tTotal Consumed(Wh)");
 
   Simulator::Stop (Seconds (duration));
   Simulator::Run ();
+
+  // show final statics
+  int i = 0;
+  for (i = 0; i < nodeNum; i++)
+  {
+    Ptr<Node> n = NodeList::GetNode (i);
+    Ptr<ElectricVehicleConsumptionModel> model = n->GetObject<ElectricVehicleConsumptionModel>();
+    NS_LOG_UNCOND ("Node " << i << " Total consumed: " << model->GetTotalEnergyConsumed () << " Wh");
+  }
+
   Simulator::Destroy ();
 
   return 0;

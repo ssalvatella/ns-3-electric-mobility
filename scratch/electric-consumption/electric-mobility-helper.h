@@ -39,7 +39,7 @@ public:
    * \param filename filename of file which contains the
    *        xml with vehicles attributes
    */
-  ElectricMobilityHelper (std::string filename);
+  ElectricMobilityHelper (std::string filename, double updateTime);
 
   /**
    * Read the xml file and configure the movement
@@ -55,8 +55,9 @@ private:
   void CreateModelFromXml (xmlNode * xmlNode);
 
 private:
-  std::string m_filename; // filename of file containing the vehicle attributes
+  std::string m_filename;  // filename of file containing the vehicle attributes
   xmlDoc *m_xmlDoc;        // XML Document with XML nodes
+  double m_updateTime;       // time between each update of electric vehicle consumption
 };
 
   Ptr<Node> GetNodeFromContext(std::string context);

@@ -28,8 +28,8 @@
 #include "ns3/mobility-module.h"
 
 #define STANDARD_GRAVITY 9.80665
-#define DENSITY_AIR 1.225
-#define JOULES_TO_WH 0.00028
+#define DENSITY_AIR 1.2041
+#define JOULES_TO_WH 0.0002778
 
 namespace ns3 {
 
@@ -47,27 +47,17 @@ namespace ns3 {
 
   private:
 
-    double CalculateEnergyGain (void);
-
-    double CalculateVehicleEnergy (double velocity, double height);
-
-    double CalculateEnergyLoss (double velocity, double distanceCovered);
-
-    double CalculateLossEnergyAir (double velocity, double distanceCovered);
-
-    double CalculateLossEnergyRolling (double distanceCovered);
-
-    double CalculateLossEnergyCurve (double velocity, double distanceCovered);
-
-    double CalculateLossEnergyConst (void);
-
-    double CalculateKineticEnergy (double velocity);
-
-    double CalculatePotentialEnergy (double height);
-
-    double CalculateRotatingInertiaEnergy (double velocity);
+    double CalculateEnergyDiff (void);
 
     void SaveLastPosAndVel (void);
+
+    double GetDistance (Vector u, Vector v);
+
+    double VelocityToDistance (double velocity);
+
+    double GetAngle (Vector v);
+
+    double GetAngleDiff (double angle1, double angle2);
 
     /*
     * Getters and Setters
@@ -92,6 +82,10 @@ namespace ns3 {
 
     void SetTotalEnergyConsumed (double energyConsumed);
 
+    double GetEnergyConsumed (void);
+
+    void SetEnergyConsumed (double energyConsumed);
+
     void IncreaseTotalEnergyConsumed (double energyConsumed);
 
     double GetEnergyFraction (void);
@@ -99,10 +93,6 @@ namespace ns3 {
     double GetMaximunBatteryCapacity (void);
 
     void SetMaximunBatteryCapacity (double maximunBatteryCapacity);
-
-    double GetMaximumPower (void);
-
-    void SetMaximumPower (double maximumPower);
 
     double GetVehicleMass (void);
 
@@ -148,8 +138,8 @@ namespace ns3 {
     double m_initialEnergyWh;                     // initial energy in Wh
     TracedValue<double> m_remainingEnergyWh;      // remaining energy in Wh
     double m_totalEnergyConsumed;                 // total energy consumed in Wh
+    double m_energyConsumed;                      // energy consumed in last update in Wh
     double m_maximumBatteryCapacity;              // maximum battery capacity in Wh
-    double m_maximumPower;                        // maximum power in W
     double m_vehicleMass;                         // vehicle mass in Kg
     double m_frontSurfaceArea;                    // front surface area of vehicle in m2
     double m_airDragCoefficient;                  // air drag coefficient
@@ -159,6 +149,7 @@ namespace ns3 {
     double m_constantPowerIntake;                 // constant power intake of vehicle in W
     double m_propulsionEfficiency;                // propulsion efficiency factor
     double m_recuperationEfficiency;              // recuperation efficiency factor
+    double m_lastAngle;                           // last angle of vehicle in degrees
     Time m_timeFromLastUpdate;
   };
 

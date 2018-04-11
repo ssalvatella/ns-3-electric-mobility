@@ -36,15 +36,23 @@ namespace ns3 {
 
   NS_LOG_COMPONENT_DEFINE ("ElectricMobilityHelper");
 
-  ElectricMobilityHelper::ElectricMobilityHelper (std::string filename)
+  ElectricMobilityHelper::ElectricMobilityHelper (std::string filename, double updateTime)
     : m_filename (filename)
   {
     std::ifstream file (m_filename.c_str (), std::ios::in);
+    if (updateTime <= 0 || std::isnan (updateTime))
+    {
+      m_updateTime = 1;
+    } else
+    {
+      m_updateTime = updateTime;
+    }
+    NS_LOG_UNCOND ("update time " << m_updateTime);
     if (!(file.is_open ())) NS_FATAL_ERROR("Could not open vehicule attributes file " << m_filename.c_str() << " for reading, aborting here \n");
   }
 
   // Prints actual position and velocity when a course change event occurs
-  static
+/*   static
   void
   CourseChange (std::string context, Ptr<const MobilityModel> mobility)
   {
@@ -52,15 +60,22 @@ namespace ns3 {
     Ptr<Node> n = GetNodeFromContext(context);
     Ptr<ElectricVehicleConsumptionModel> consumptionModel = n->GetObject<ElectricVehicleConsumptionModel> ();
     consumptionModel->UpdateConsumption ();
-  }
+  } */
 
   void 
   ElectricMobilityHelper::Install (void)
   {
     LoadXml ();
     // Configure callback for logging
-    Config::Connect ("/NodeList/*/$ns3::MobilityModel/CourseChange",
-                    MakeCallback (&CourseChange));
+    //Config::Connect ("/NodeList/*/$ns3::MobilityModel/CourseChange",
+                    //MakeCallback (&CourseChange));
+  }
+
+  static void
+  UpdateModelConsumption (Ptr<ElectricVehicleConsumptionModel> consumptionModel, double updateTime)
+  {
+    consumptionModel->UpdateConsumption ();
+    Simulator::Schedule (Seconds (updateTime), &UpdateModelConsumption, consumptionModel, updateTime);
   }
 
 /*
@@ -206,6 +221,8 @@ namespace ns3 {
 
     //we add the consumption model to the node
     node->AggregateObject (consumptionModel);
+
+    Simulator::Schedule (Seconds (m_updateTime), &UpdateModelConsumption, consumptionModel, m_updateTime);
   }
 
   Ptr<Node> 

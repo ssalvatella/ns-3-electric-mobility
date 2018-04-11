@@ -74,103 +74,88 @@ namespace ns3 {
         return;
       }
       
-      double energyGain = CalculateEnergyGain () * JOULES_TO_WH;
-      IncreaseRemainingEnergy (energyGain);
-      IncreaseTotalEnergyConsumed (-energyGain);
+      double energyDiff = CalculateEnergyDiff (); // Wh
+
+      DecreaseRemainingEnergy (energyDiff);
+      SetEnergyConsumed (energyDiff);
+      IncreaseTotalEnergyConsumed (energyDiff);
 
       SetLastUpdateTime (Simulator::Now ());
       SaveLastPosAndVel ();
+      m_lastAngle = GetAngle (GetMobilityModel ()->GetVelocity ());
     }
 
-    double ElectricVehicleConsumptionModel::CalculateEnergyGain (void)
+    double ElectricVehicleConsumptionModel::CalculateEnergyDiff (void)
     {
+
       double velocityNow = GetVelocity (m_mobilityModel->GetVelocity ());
       double lastVelocity = GetVelocity (m_lastVelocity);
       double heightNow = m_mobilityModel->GetPosition ().z;
       double lastHeight = m_lastPosition.z;
 
-/*       std::cout << "velocityNow: " << velocityNow << "\n";
-      std::cout << "heightNow: " << heightNow << "\n";
-      std::cout << "lastVelocity: " << lastVelocity << "\n";
-      std::cout << "lastHeight: " << lastHeight << "\n";
-      std::cout << "lastPos: " << m_lastPosition << "\n"; */
+      double distanceCovered = VelocityToDistance (velocityNow);
 
-      double vehicleEnergyNow = CalculateVehicleEnergy (velocityNow, heightNow);
-      double vehicleEnergyLast = CalculateVehicleEnergy (lastVelocity, lastHeight);
-      double energyLoss = CalculateEnergyLoss (lastVelocity, 1); // dirty distanceCovered, must be changed
+      // calculate potential energy difference
+      double energyDiff = GetVehicleMass () * STANDARD_GRAVITY * (heightNow - lastHeight);
 
-      // std::cout << "vehicleEnergyNow: "  << vehicleEnergyNow * JOULES_TO_WH << "\t"
-      //           << "vehicleEnergyLast: " << vehicleEnergyLast * JOULES_TO_WH << "\t"
-      //           << "energyLoss: " << energyLoss * JOULES_TO_WH << "\t"
-      //           << "totalEnergyGain: " << (vehicleEnergyNow - vehicleEnergyLast - energyLoss) * JOULES_TO_WH << "\n";
+      // kinetic energy difference of vehicle
+      energyDiff += 0.5 * GetVehicleMass () * (velocityNow * velocityNow - lastVelocity * lastVelocity);
 
-      return vehicleEnergyNow
-             - vehicleEnergyLast
-             - energyLoss;
-    }
+      // add rotational energy diff of internal rotating elements
+      energyDiff += GetInternalMomentOfInertia () * (velocityNow * velocityNow - lastVelocity * lastVelocity);
 
-    double
-    ElectricVehicleConsumptionModel::CalculateEnergyLoss (double velocity, double distanceCovered)
-    {
-      NS_LOG_FUNCTION (this << velocity << " " << distanceCovered);
-      return CalculateLossEnergyAir (velocity, distanceCovered) + CalculateLossEnergyRolling (distanceCovered) 
-        + CalculateLossEnergyCurve (velocity, distanceCovered) + CalculateLossEnergyConst ();
-    }
+      // Energy loss through Air resistance [Ws]
+      // Calculate energy losses:
+      // EnergyLoss,Air = 1/2 * rho_air [kg/m^3] * myFrontSurfaceArea [m^2] * myAirDragCoefficient [-] * v_Veh^2 [m/s] * s [m]
+      //                    ... with rho_air [kg/m^3] = 1,2041 kg/m^3 (at T = 20C)
+      //                    ... with s [m] = v_Veh [m/s] * TS [s]
+      energyDiff += 0.5 * DENSITY_AIR * GetFrontSurfaceArea () * GetAirDragCoefficient () * velocityNow * velocityNow * distanceCovered;
 
-    double
-    ElectricVehicleConsumptionModel::CalculateLossEnergyAir (double velocity, double distanceCovered)
-    {
-      NS_LOG_FUNCTION (this << velocity << " " << distanceCovered);
-      return (DENSITY_AIR / 2) * GetFrontSurfaceArea () * GetAirDragCoefficient () * std::pow (velocity, 2) * distanceCovered;
-    }
+      // Energy loss through Roll resistance [Ws]
+      //                    ... (fabs(veh.getSpeed())>=0.01) = 0, if vehicle isn't moving
+      // EnergyLoss,Tire = c_R [-] * F_N [N] * s [m]
+      //                    ... with c_R = ~0.012    (car tire on asphalt)
+      //                    ... with F_N [N] = myMass [kg] * g [m/s^2]
+      energyDiff += GetRollDragCoefficient () * STANDARD_GRAVITY * GetVehicleMass () * distanceCovered;
 
-    double
-    ElectricVehicleConsumptionModel::CalculateLossEnergyRolling (double distanceCovered)
-    {
-      NS_LOG_FUNCTION (this << distanceCovered);
-      return GetRollDragCoefficient () * GetVehicleMass () * STANDARD_GRAVITY * distanceCovered;
-    }
+      // Energy loss through friction by radial force [Ws]
+      // If angle of vehicle was changed
+      const double angleDiff = m_lastAngle == std::numeric_limits<double>::infinity() ? 0. : GetAngleDiff(m_lastAngle, GetAngle (GetMobilityModel ()->GetVelocity ()));
 
-    double
-    ElectricVehicleConsumptionModel::CalculateLossEnergyCurve (double velocity, double distanceCovered)
-    {
-      NS_LOG_FUNCTION (this << velocity << " " << distanceCovered);
-      // (m * v 2) / r [k] must change 1 by real value
-      return GetRadialDragCoefficient () * ((GetVehicleMass () * std::pow (velocity, 2) / 1)) * distanceCovered;
-    }
+      if (angleDiff != 0.)
+      {
+        // Compute new radio
+        double radius = distanceCovered / fabs(angleDiff);
 
-    double
-    ElectricVehicleConsumptionModel::CalculateLossEnergyConst (void) {
-      NS_LOG_FUNCTION (this);
-      return GetConstantPowerIntake () * m_timeFromLastUpdate.GetSeconds ();
-    }
+        // Check if radius is in the interval [0.0001 - 10000] (To avoid overflow and division by zero)
+        if (radius < 0.0001)
+        {
+            radius = 0.0001;
+        } else if (radius > 10000)
+        {
+            radius = 10000;
+        }
 
-    double
-    ElectricVehicleConsumptionModel::CalculateVehicleEnergy (double velocity, double height)
-    {
-      NS_LOG_FUNCTION (this << velocity << " " << height) ;
-      return CalculateKineticEnergy (velocity) + CalculatePotentialEnergy (height) + CalculateRotatingInertiaEnergy (velocity);
-    }
+        // EnergyLoss,internalFrictionRadialForce = c [m] * F_rad [N];
+        // Energy loss through friction by radial force [Ws]
+        energyDiff += GetRadialDragCoefficient () * GetVehicleMass () * velocityNow * velocityNow / radius;
+      }
 
-    double
-    ElectricVehicleConsumptionModel::CalculateKineticEnergy (double velocity)
-    {
-      NS_LOG_FUNCTION (this << velocity);
-      return (GetVehicleMass () / 2) * std::pow (velocity, 2);
-    }
+      // EnergyLoss,constantConsumers
+      // Energy loss through constant loads (e.g. A/C) [Ws]
+      energyDiff += GetConstantPowerIntake ();
 
-    double
-    ElectricVehicleConsumptionModel::CalculatePotentialEnergy (double height)
-    {
-      NS_LOG_FUNCTION (this);
-      return GetVehicleMass () * height * STANDARD_GRAVITY;
-    }
+      //E_Bat = E_kin_pot + EnergyLoss;
+      if (energyDiff > 0)
+      {
+        energyDiff /= GetPropulsionEfficiency ();
+      } else
+      {
+        energyDiff += GetRecuperationEfficiency ();
+      }
 
-    double
-    ElectricVehicleConsumptionModel::CalculateRotatingInertiaEnergy (double velocity)
-    {
-      NS_LOG_FUNCTION (this);
-      return (GetInternalMomentOfInertia () / 2) * std::pow (velocity, 2);
+      // convert from [Ws] to [Wh] (3600s / 1h):
+      return energyDiff / 3600;
     }
 
     void
@@ -183,6 +168,37 @@ namespace ns3 {
       m_lastVelocity.x = m_mobilityModel->GetVelocity ().x;
       m_lastVelocity.y = m_mobilityModel->GetVelocity ().y;
       m_lastVelocity.z = m_mobilityModel->GetVelocity ().z;
+    }
+
+    double
+    ElectricVehicleConsumptionModel::VelocityToDistance (double velocity)
+    {
+      return velocity * m_timeFromLastUpdate.GetSeconds ();
+    }
+
+    double
+    ElectricVehicleConsumptionModel::GetDistance (Vector u, Vector v)
+    {
+      return std::sqrt ((std::pow (u.x - v.x, 2) + std::pow (u.y - v.y, 2) + std::pow (u.z - v.z, 2)));
+    }
+
+    double
+    ElectricVehicleConsumptionModel::GetAngle (Vector v)
+    {
+      return std::atan2 (v.y, v.x);
+    }
+
+    double
+    ElectricVehicleConsumptionModel::GetAngleDiff (double angle1, double angle2)
+    {
+      double dtheta = angle2 - angle1;
+      while (dtheta > (double) M_PI) {
+          dtheta -= (double)(2.0 * M_PI);
+      }
+      while (dtheta < (double) - M_PI) {
+          dtheta += (double)(2.0 * M_PI);
+      }
+      return dtheta;
     }
 
     /*
@@ -271,6 +287,20 @@ namespace ns3 {
       m_totalEnergyConsumed = energyConsumed;
     }
 
+    double
+    ElectricVehicleConsumptionModel::GetEnergyConsumed (void)
+    {
+      NS_LOG_FUNCTION (this);
+      return m_energyConsumed;
+    }
+
+    void
+    ElectricVehicleConsumptionModel::SetEnergyConsumed (double energyConsumed)
+    {
+      NS_LOG_FUNCTION (this << energyConsumed);
+      m_energyConsumed = energyConsumed;
+    }
+
     void
     ElectricVehicleConsumptionModel::IncreaseTotalEnergyConsumed (double energyConsumed)
     {
@@ -295,18 +325,6 @@ namespace ns3 {
     ElectricVehicleConsumptionModel::SetMaximunBatteryCapacity (double maximunBatteryCapacity)
     {
       m_maximumBatteryCapacity = maximunBatteryCapacity;
-    }
-
-    double
-    ElectricVehicleConsumptionModel::GetMaximumPower (void)
-    {
-      return m_maximumPower;
-    }
-
-    void
-    ElectricVehicleConsumptionModel::SetMaximumPower (double maximumPower)
-    {
-      m_maximumPower = maximumPower;
     }
 
     double
