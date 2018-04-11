@@ -215,7 +215,6 @@ namespace ns3 {
     double 
     ElectricVehicleConsumptionModel::GetVelocity (Vector vel)
     {
-      vel = m_mobilityModel->GetVelocity ();
       return std::sqrt (std::pow(vel.x, 2) + std::pow(vel.y, 2) + std::pow(vel.z, 2));
     }
 

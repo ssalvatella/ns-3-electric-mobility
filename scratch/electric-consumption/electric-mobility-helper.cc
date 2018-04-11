@@ -40,14 +40,14 @@ namespace ns3 {
     : m_filename (filename)
   {
     std::ifstream file (m_filename.c_str (), std::ios::in);
-    if (updateTime <= 0 || std::isnan (updateTime))
+    if (updateTime <= 0.01 || std::isnan (updateTime))
     {
       m_updateTime = 1;
     } else
     {
       m_updateTime = updateTime;
     }
-    NS_LOG_UNCOND ("update time " << m_updateTime);
+
     if (!(file.is_open ())) NS_FATAL_ERROR("Could not open vehicule attributes file " << m_filename.c_str() << " for reading, aborting here \n");
   }
 
