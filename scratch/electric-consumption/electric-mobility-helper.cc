@@ -51,24 +51,10 @@ namespace ns3 {
     if (!(file.is_open ())) NS_FATAL_ERROR("Could not open vehicule attributes file " << m_filename.c_str() << " for reading, aborting here \n");
   }
 
-  // Prints actual position and velocity when a course change event occurs
-/*   static
-  void
-  CourseChange (std::string context, Ptr<const MobilityModel> mobility)
-  {
-    // Get the node Id from the context of callback
-    Ptr<Node> n = GetNodeFromContext(context);
-    Ptr<ElectricVehicleConsumptionModel> consumptionModel = n->GetObject<ElectricVehicleConsumptionModel> ();
-    consumptionModel->UpdateConsumption ();
-  } */
-
   void 
   ElectricMobilityHelper::Install (void)
   {
     LoadXml ();
-    // Configure callback for logging
-    //Config::Connect ("/NodeList/*/$ns3::MobilityModel/CourseChange",
-                    //MakeCallback (&CourseChange));
   }
 
   static void
@@ -81,7 +67,6 @@ namespace ns3 {
 /*
  * Private functions start here.
  */
-
   void
   ElectricMobilityHelper::LoadXml (void)
   {
