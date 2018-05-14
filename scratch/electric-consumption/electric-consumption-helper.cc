@@ -30,13 +30,13 @@
 #include "ns3/node.h"
 #include "ns3/log.h"
 #include "ns3/mobility-module.h"
-#include "electric-mobility-helper.h"
+#include "electric-consumption-helper.h"
 
 namespace ns3 {
 
-  NS_LOG_COMPONENT_DEFINE ("ElectricMobilityHelper");
+  NS_LOG_COMPONENT_DEFINE ("ElectricConsumptionHelper");
 
-  ElectricMobilityHelper::ElectricMobilityHelper (std::string filename, double updateTime)
+  ElectricConsumptionHelper::ElectricConsumptionHelper (std::string filename, double updateTime)
     : m_filename (filename)
   {
     std::ifstream file (m_filename.c_str (), std::ios::in);
@@ -52,7 +52,7 @@ namespace ns3 {
   }
 
   void 
-  ElectricMobilityHelper::Install (void)
+  ElectricConsumptionHelper::Install (void)
   {
     LoadXml ();
   }
@@ -68,7 +68,7 @@ namespace ns3 {
  * Private functions start here.
  */
   void
-  ElectricMobilityHelper::LoadXml (void)
+  ElectricConsumptionHelper::LoadXml (void)
   {
     m_xmlDoc = NULL;
     /*parse the file and get the DOM */
@@ -104,7 +104,7 @@ namespace ns3 {
   }
 
   void
-  ElectricMobilityHelper::CreateModelFromXml (xmlNode * xmlVehicleNode)
+  ElectricConsumptionHelper::CreateModelFromXml (xmlNode * xmlVehicleNode)
   {
     xmlNode *currentNode = NULL;
 
@@ -206,6 +206,8 @@ namespace ns3 {
 
     //we add the consumption model to the node
     node->AggregateObject (consumptionModel);
+
+    consumptionModel->UpdateConsumption (); // first update in second 0
 
     Simulator::Schedule (Seconds (m_updateTime), &UpdateModelConsumption, consumptionModel, m_updateTime);
   }

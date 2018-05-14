@@ -54,6 +54,9 @@ namespace ns3
         NS_LOG_FUNCTION (this);
     }
 
+    /*
+    * Private functions start here.
+    */
     void
     ConsumptionModel::SetNode (Ptr<Node> node)
     {

@@ -58,7 +58,7 @@
 #include "ns3/mobility-module.h"
 #include "ns3/mobility-module.h"
 #include "ns3/ns2-mobility-helper.h"
-#include "electric-mobility-helper.h"
+#include "electric-consumption-helper.h"
 
 using namespace ns3;
  
@@ -121,8 +121,8 @@ int main (int argc, char *argv[])
   // Create Ns2MobilityHelper with the specified trace log file as parameter
   Ns2MobilityHelper ns2 = Ns2MobilityHelper (traceFile);
 
-  // Create ElectricMobilityHelper with the xml of vehicle attributes
-  ElectricMobilityHelper electricMobility = ElectricMobilityHelper (vehicleAttributesFile, updateTime);
+  // Create ElectricConsumptionHelper with the xml of vehicle attributes
+  ElectricConsumptionHelper electricMobility = ElectricConsumptionHelper (vehicleAttributesFile, updateTime);
 
   // Create all nodes.
   NodeContainer stas;
@@ -132,7 +132,7 @@ int main (int argc, char *argv[])
   electricMobility.Install (); // configure the vehicle attributes for each node
 
   Config::Connect ("/NodeList/*/$ns3::ElectricVehicleConsumptionModel/RemainingEnergy",
-                   MakeCallback (&RemainingEnergyTrace));
+              MakeCallback (&RemainingEnergyTrace));
 
   // Log a header for data
   NS_LOG_UNCOND("Time \t#\tx\ty\tz\tVel(m/s)\tEnergy Level(%)\tCurrent Energy(Wh)\tEnergy Consumed(Wh)\tTotal Consumed(Wh)");

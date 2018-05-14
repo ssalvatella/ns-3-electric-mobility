@@ -18,8 +18,8 @@
  * Author: Samuel Salvatella <ssalvatellaperez@gmail.com>
  */
 
-#ifndef ELECTRIC_MOBILITY_HELPER_H
-#define ELECTRIC_MOBILITY_HELPER_H
+#ifndef ELECTRIC_CONSUMPTION_HELPER_H
+#define ELECTRIC_CONSUMPTION_HELPER_H
 
 #include <iostream>
 #include <fstream>
@@ -32,14 +32,14 @@
 
 namespace ns3 {
 
-class ElectricMobilityHelper 
+class ElectricConsumptionHelper 
 {
 public:
   /**
    * \param filename filename of file which contains the
    *        xml with vehicles attributes
    */
-  ElectricMobilityHelper (std::string filename, double updateTime);
+  ElectricConsumptionHelper (std::string filename, double updateTime);
 
   /**
    * Read the xml file and configure the movement
@@ -66,4 +66,4 @@ private:
 
 } // namespace ns3
 
-#endif /* ELECTRIC_MOBILITY_HELPER_H */
+#endif /* ELECTRIC_CONSUMPTION_HELPER_H */

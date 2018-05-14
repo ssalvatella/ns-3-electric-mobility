@@ -29,6 +29,26 @@
 namespace ns3
 {
 
+/**
+ * \defgroup consumption Consumption Models
+ *
+ */    
+
+/**
+ * \ingroup consumption
+ *
+ * \brief Consumption model base class.
+ *
+ * This is the base class for consumption models. The consumption models perform
+ * calculation of the consumption of a vehicle simulated by a mobility. Consumption
+ * models update the energy or the fuel by implementing the update function depending
+ * on the type of vehicle (electric, gasoil, gasoline, etc.).
+ * 
+ * The model uses the mobility of the node to perform the calculations keeping
+ * the position and speed since the last update.
+ *
+ */
+
 class ConsumptionModel : public Object
 {
 public:
@@ -36,6 +56,10 @@ public:
     ConsumptionModel ();
     virtual ~ConsumptionModel ();
 
+    /**
+     * This function is called every update interval defined in the corresponding
+     * helper in order to update the consumption of the vehicle.
+    */
     virtual void UpdateConsumption (void) = 0;
 
     /**
@@ -53,30 +77,92 @@ public:
      */
     Ptr<Node> GetNode (void) const;
 
+    /**
+     * \brief Sets pointer to mobility content in the node.
+     *
+     * \param pointer to mobility containing in the node.
+    */
     void SetMobilityModel (Ptr<const MobilityModel> mobilityModel);
 
+    /**
+     * \returns Pointer to mobility content in the node.
+     *
+     * When a subclass needs to get access to the underlying mobility base class to
+     * get information about the mobility.
+     */
     Ptr<const MobilityModel> GetMobilityModel (void);
 
+    /**
+     * \brief Sets vector of the last position.
+     *
+     * \param vector of the last position.
+    */
     void SetLastPosition (Vector lastPosition);
 
+    /**
+     * \returns Vector of the last position from last update.
+     *
+     * Get the vector of the last positition from last update.
+     */
     Vector GetLastPosition (void);
 
+    /**
+     * \brief Sets vector of the last velocity.
+     *
+     * \param vector of the last velocity.
+    */
     void SetLastVelocity (Vector lastVelocity);
 
+    /**
+     * \returns Vector of the last velocity from last update.
+     *
+     * Get the vector of the last velocity from last update.
+     */
     Vector GetLastVelocity (void);
 
+    /**
+     * \brief Sets the time of the last update.
+     *
+     * \param time of the last velocity.
+    */
     void SetLastUpdateTime (Time lastUpdate);
 
+    /**
+     * \returns Time of the last update.
+     *
+     * Get the time of the last update.
+     */
     Time GetLastUpdateTime (void);
 
 private:
 
+    /**
+     * Pointer to node containing this Consumption Model. Used by helper class to make
+     * sure models are installed onto the corresponding node.
+     */
     Ptr<Node> m_node;
 
-protected:    
-    Ptr<const MobilityModel> m_mobilityModel;     // pointer to mobility model
+protected:
+
+    /**
+     * Pointer to mobility content in the node. Used for the update
+     * for calculations of consumption.
+     */
+    Ptr<const MobilityModel> m_mobilityModel;
+
+    /**
+     * Vector of the last position (x, y, z).
+     */
     Vector m_lastPosition;
+
+    /**
+     * Vector of the last velocity (x, y, z) expressed in m/s.
+     */
     Vector m_lastVelocity;
+
+    /**
+     * Time of the last update.
+     */
     Time m_lastUpdateTime;
 
 };
