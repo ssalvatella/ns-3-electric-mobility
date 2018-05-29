@@ -57,7 +57,7 @@ private:
 private:
   std::string m_filename;  // filename of file containing the vehicle attributes
   xmlDoc *m_xmlDoc;        // XML Document with XML nodes
-  double m_updateTime;       // time between each update of electric vehicle consumption
+  double m_updateTime;     // time between each update of electric vehicle consumption
 };
 
   Ptr<Node> GetNodeFromContext(std::string context);

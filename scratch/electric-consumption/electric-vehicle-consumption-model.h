@@ -33,6 +33,32 @@
 
 namespace ns3 {
 
+/**
+ * \ingroup consumption
+ * \brief Model consumption of electric vehicle based on [1].
+ *
+ * The values ​​of the model are loaded by the corresponding help class from an XML.
+ * The default values are set to zero.
+ *
+ * Energy consumed each update can be trace from the attribute RemainingEnergyWh.
+ *
+ * The model requires several parameters for simulate consumption:
+ * - InitialEnergyWh, initial energy when start the simulation, in Wh
+ * - VehicleMass, mass of the vehicle in Kg
+ * - MaximumBatteryCapacity, maximum capacity of the vehicle battery, in Wh
+ * - FrontSurfaceArea, front surface area of the vehicle, in m2
+ * - AirDragCoefficient, air drag coefficient of the vehicle
+ * - InternalMomentOfInertia, internal moment of intertia of the vehicle, in Kg * m2
+ * - RadialDragCoefficient, radial drag coefficient of the vehicle
+ * - RollDragCoefficient, roll drag coefficient of the vehicle
+ * - ConstantPowerIntake, constant power intake of the vehicle (lights, air conditioner, etc.), in W
+ * - PropulsionEfficiency, propulsion efficiency factor
+ * - RecuperationEfficiency, recuperation efficiency factor
+ *
+ * References:
+ * [1] Kurczveil, T., López, P.A., Schnieder, E., Implementation of an Energy Model and a Charging Infrastructure in SUMO. 
+ *     
+ */
   class ElectricVehicleConsumptionModel : public ConsumptionModel
   {
   public:
@@ -43,20 +69,57 @@ namespace ns3 {
 
     ~ElectricVehicleConsumptionModel (void);
 
+    /**
+     * This function is called every update interval defined in the corresponding
+     * helper in order to update the consumption of the vehicle.
+    */
     virtual void UpdateConsumption (void);
 
   private:
 
+    /**
+     * \returns Double with the difference of battery energy between a moment [k] and [k + 1]
+     *
+     * \brief Calculate the diferrence of battery energy. 
+     */
     double CalculateEnergyDiff (void);
 
+    /**
+     * Save the position and velocity of the momento to use in the next update
+     * consumption call.
+    */
     void SaveLastPosAndVel (void);
 
+    /**
+     * \returns Double distance in meters between two position vectors.
+     *
+     * \brief Calculate the Euclidean distance between two vectors in meters.
+     */
     double GetDistance (Vector u, Vector v);
 
+    /**
+     * \param Double velocity in m/s.
+     * 
+     * \returns Double distance in meters
+     *
+     * \brief Calculate the distance traveled by the vehicle since the last update from a speed.
+     */
     double VelocityToDistance (double velocity);
 
+    /**
+     * \param Vector of a velocity
+     * 
+     * \returns Double steering angle of the vehicle in radians
+     *
+     * \brief Calculate the steering angle of the vehicle in radians
+     */
     double GetAngle (Vector v);
 
+    /**
+     * \returns Double steering angle of the vehicle in radians
+     *
+     * Calculate the steering angle of the vehicle in radians
+     */
     double GetAngleDiff (double angle1, double angle2);
 
     /*

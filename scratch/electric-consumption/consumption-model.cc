@@ -57,6 +57,7 @@ namespace ns3
     /*
     * Private functions start here.
     */
+   
     void
     ConsumptionModel::SetNode (Ptr<Node> node)
     {
