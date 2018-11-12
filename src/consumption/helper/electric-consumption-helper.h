@@ -28,7 +28,7 @@
 #include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>
 
-#include "electric-vehicle-consumption-model.h"
+#include "ns3/electric-vehicle-consumption-model.h"
 
 namespace ns3 {
 

@@ -1,0 +1,18 @@
+def build(bld):
+    module = bld.create_ns3_module('consumption', ['mobility'])
+
+    module.source = [
+        'model/consumption-model.cc',
+        'model/electric-vehicle-consumption-model.cc',
+        'helper/electric-consumption-helper.cc'
+    ]
+
+    headers = bld(features='ns3header')
+
+    headers.module = 'consumption'
+
+    headers.source = [
+        'model/consumption-model.h',
+        'model/electric-vehicle-consumption-model.h',
+        'helper/electric-consumption-helper.h'
+    ]
