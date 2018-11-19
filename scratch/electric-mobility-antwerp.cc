@@ -77,11 +77,15 @@ main (int argc, char *argv[])
     // Create ElectricConsumptionHelper with the xml of vehicle attributes
     ElectricConsumptionHelper electricMobility = ElectricConsumptionHelper (vehicleAttributesFile, updateTime);
 
+    // Create all nodes.
+    NodeContainer stas;
+    stas.Create (nodeNum);
+
     ns2.Install (); // configure movements for each node, while reading trace file
     electricMobility.Install (); // configure the vehicle attributes for each node
 
-    Config::Connect ("/NodeList/*/$ns3::ElectricVehicleConsumptionModel/RemainingEnergy",
-                MakeCallback (&RemainingEnergyTrace));
+    //Config::Connect ("/NodeList/*/$ns3::ElectricVehicleConsumptionModel/RemainingEnergy",
+    //            MakeCallback (&RemainingEnergyTrace));
 
     // Log a header for data
     NS_LOG_UNCOND("Time \t#\tx\ty\tz\tVel(m/s)\tEnergy Level(%)\tCurrent Energy(Wh)\tEnergy Consumed(Wh)\tTotal Consumed(Wh)");
