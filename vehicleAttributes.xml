@@ -1,5 +1,5 @@
 <ElectricVehicles>
-    <ElectricVehicle node="0">
+    <ElectricVehicle node="1">
         <!-- ELECTRIC BUS PARAMETERS -->
         <param key="initialEnergy" value="15000"/>
         <param key="maximumBatteryCapacity" value="324000"/>

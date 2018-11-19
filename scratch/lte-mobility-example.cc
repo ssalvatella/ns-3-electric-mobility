@@ -10,6 +10,7 @@
  #include "ns3/point-to-point-helper.h"
  #include "ns3/config-store.h"
  #include "ns3/electric-consumption-helper.h"
+ #include "ns3/netanim-module.h"
 
 using namespace ns3;
 
@@ -207,6 +208,8 @@ main (int argc, char *argv[])
   serverApps.Start (MilliSeconds (10));
   clientApps.Start (MilliSeconds (40));
   lteHelper->EnableTraces ();
+
+  AnimationInterface anim ("animation.xml");
 
   Simulator::Stop (MilliSeconds (10000)); // La simulación durará 1 segundos
   Simulator::Run ();
