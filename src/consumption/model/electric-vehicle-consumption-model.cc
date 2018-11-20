@@ -75,7 +75,7 @@ namespace ns3 {
       }
       
       double energyDiff = CalculateEnergyDiff (); // Wh
-
+      
       DecreaseRemainingEnergy (energyDiff);
       SetEnergyConsumed (energyDiff);
       IncreaseTotalEnergyConsumed (energyDiff);

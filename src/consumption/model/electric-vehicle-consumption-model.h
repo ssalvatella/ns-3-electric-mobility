@@ -212,7 +212,7 @@ namespace ns3 {
     double m_constantPowerIntake;                 // constant power intake of vehicle in W
     double m_propulsionEfficiency;                // propulsion efficiency factor
     double m_recuperationEfficiency;              // recuperation efficiency factor
-    double m_lastAngle;                           // last angle of vehicle in degrees
+    double m_lastAngle = 0;                           // last angle of vehicle in degrees
     Time m_timeFromLastUpdate;
   };
 

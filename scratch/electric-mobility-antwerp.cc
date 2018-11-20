@@ -10,6 +10,7 @@
 #include "ns3/mobility-module.h"
 #include "ns3/ns2-mobility-helper.h"
 #include "ns3/electric-consumption-helper.h"
+#include "ns3/netanim-module.h"
 
 using namespace ns3;
 
@@ -81,8 +82,13 @@ main (int argc, char *argv[])
     NodeContainer stas;
     stas.Create (nodeNum);
 
+    NS_LOG_UNCOND ("Instalando trazas ns2...");
     ns2.Install (); // configure movements for each node, while reading trace file
+
+    NS_LOG_UNCOND ("Instalando modelos eléctricos...");
     electricMobility.Install (); // configure the vehicle attributes for each node
+
+    NS_LOG_UNCOND ("Trazas y modelos eléctricos instalados.");
 
     //Config::Connect ("/NodeList/*/$ns3::ElectricVehicleConsumptionModel/RemainingEnergy",
     //            MakeCallback (&RemainingEnergyTrace));
@@ -91,6 +97,9 @@ main (int argc, char *argv[])
     NS_LOG_UNCOND("Time \t#\tx\ty\tz\tVel(m/s)\tEnergy Level(%)\tCurrent Energy(Wh)\tEnergy Consumed(Wh)\tTotal Consumed(Wh)");
 
     Simulator::Stop (Seconds (duration));
+
+    AnimationInterface anim ("animation.xml");
+
     Simulator::Run ();
 
     // show final statics
