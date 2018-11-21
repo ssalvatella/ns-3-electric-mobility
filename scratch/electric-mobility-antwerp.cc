@@ -98,8 +98,6 @@ main (int argc, char *argv[])
 
     Simulator::Stop (Seconds (duration));
 
-    AnimationInterface anim ("animation.xml");
-
     Simulator::Run ();
 
     // show final statics
@@ -108,7 +106,7 @@ main (int argc, char *argv[])
     {
         Ptr<Node> n = NodeList::GetNode (i);
         Ptr<ElectricVehicleConsumptionModel> model = n->GetObject<ElectricVehicleConsumptionModel>();
-        NS_LOG_UNCOND ("Node " << i << " Total consumed: " << model->GetTotalEnergyConsumed () << " Wh");
+        std::cout << "Node " << i << " Total consumed: " << model->GetTotalEnergyConsumed () << " Wh\n";
     }
 
     Simulator::Destroy ();
