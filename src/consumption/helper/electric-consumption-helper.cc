@@ -130,6 +130,8 @@ namespace ns3 {
       return;
     }
 
+    consumptionModel->SetNode (node); 
+
     // read parameters of electric vehicle
     for (currentNode = xmlVehicleNode->children; currentNode; currentNode = currentNode->next) {
       if (currentNode->type == XML_ELEMENT_NODE) {

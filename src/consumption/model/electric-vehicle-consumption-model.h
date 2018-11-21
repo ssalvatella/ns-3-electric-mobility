@@ -200,7 +200,7 @@ namespace ns3 {
   private:
     double m_initialEnergyWh;                     // initial energy in Wh
     TracedValue<double> m_remainingEnergyWh;      // remaining energy in Wh
-    double m_totalEnergyConsumed;                 // total energy consumed in Wh
+    double m_totalEnergyConsumed = 0;                 // total energy consumed in Wh
     double m_energyConsumed;                      // energy consumed in last update in Wh
     double m_maximumBatteryCapacity;              // maximum battery capacity in Wh
     double m_vehicleMass;                         // vehicle mass in Kg
