@@ -116,6 +116,6 @@ main (int argc, char *argv[])
     clock_t end_simulation = clock();
 
     double sim_secs = double(end_simulation - begin_simulation) / CLOCKS_PER_SEC;
-    NS_LOG_UNCOND(parse_secs << "\t" << sim_secs);
+    std::cout << parse_secs << "\t" << sim_secs << "\n";
 
 }
