@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <ctime>
 
 #include "ns3/log.h"
 #include "ns3/node-list.h"
@@ -19,7 +20,7 @@ int
 main (int argc, char *argv[])
 {
 
-  NS_LOG_UNCOND ("Mobility Antwerp");
+  //NS_LOG_UNCOND ("Mobility Antwerp");
 
   std::string traceFile;
   std::string vehicleAttributesFile;
@@ -54,26 +55,35 @@ main (int argc, char *argv[])
         return 0;
     }
 
+    clock_t begin_parse = clock();
+
     Ns2MobilityHelper ns2 = Ns2MobilityHelper (traceFile);
 
     // Create all nodes.
     NodeContainer stas;
     stas.Create (nodeNum);
 
-    NS_LOG_UNCOND ("Instalando trazas ns2...");
+    //NS_LOG_UNCOND ("Instalando trazas ns2...");
     ns2.Install (); // configure movements for each node, while reading trace file
 
-    NS_LOG_UNCOND ("Trazas y modelos eléctricos instalados.");
+    //NS_LOG_UNCOND ("Trazas y modelos eléctricos instalados.");
 
     //Config::Connect ("/NodeList/*/$ns3::ElectricVehicleConsumptionModel/RemainingEnergy",
     //            MakeCallback (&RemainingEnergyTrace));
 
     // Log a header for data
 
+    clock_t end_parse = clock();
+    double parse_secs = double(end_parse - begin_parse) / CLOCKS_PER_SEC;
+
     Simulator::Stop (Seconds (duration));
 
+    clock_t begin_simulation = clock();
     Simulator::Run ();
 
     Simulator::Destroy ();
+    clock_t end_simulation = clock();
 
+    double sim_secs = double(end_simulation - begin_simulation) / CLOCKS_PER_SEC;
+    NS_LOG_UNCOND(parse_secs << "\t" << sim_secs);
 }
